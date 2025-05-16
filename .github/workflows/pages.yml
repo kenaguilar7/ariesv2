@@ -47,6 +47,15 @@ jobs:
             --output ./publish \
             --no-restore
 
+      - name: Verify published files
+        run: |
+          echo "Checking published files..."
+          ls -la ./publish/wwwroot
+          ls -la ./publish/wwwroot/css
+          ls -la ./publish/wwwroot/lib/bootstrap/dist/css
+          ls -la ./publish/wwwroot/_framework
+          ls -la ./publish/wwwroot/_content || true
+
       - name: Change base-tag in index.html
         run: |
           echo "Updating base tag..."
