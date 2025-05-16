@@ -29,25 +29,47 @@ jobs:
         with:
           dotnet-version: '7.0.x'
 
+      - name: List solution files
+        run: |
+          dir /s /b *.sln
+          echo "Current directory:"
+          pwd
+          echo "Directory contents:"
+          dir
+
       - name: Restore dependencies
-        run: dotnet restore aries.contabilidad.2.0.sln
+        run: |
+          echo "Restoring dependencies for solution..."
+          dotnet restore "./aries.contabilidad.2.0.sln"
+        continue-on-error: false
 
       - name: Build solution
-        run: dotnet build aries.contabilidad.2.0.sln --configuration Release --no-restore
+        run: |
+          echo "Building solution in Release configuration..."
+          dotnet build "./aries.contabilidad.2.0.sln" --configuration Release --no-restore
+        continue-on-error: false
 
       - name: Install DocFX
-        run: dotnet tool install -g docfx
+        run: |
+          echo "Installing DocFX..."
+          dotnet tool install --global docfx
+          docfx --version
 
       - name: Build Documentation
-        run: docfx docs/docfx.json
+        run: |
+          echo "Building documentation..."
+          docfx docs/docfx.json
+          echo "Verifying _site directory contents:"
+          dir docs/_site
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v2
         with:
-          path: docs/_site
+          path: ./docs/_site
+          retention-days: 1
 
   deploy:
     environment:
