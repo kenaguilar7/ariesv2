@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Aries.Contabilidad.Core\Aries.Contabilidad.Core.csproj" />
+    <ProjectReference Include="..\..\Core\Aries.Contabilidad.Core\Aries.Contabilidad.Core.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,0 +1,31 @@
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft": "Warning",
+      "Microsoft.Hosting.Lifetime": "Information"
+    }
+  },
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=(localdb)\\mssqllocaldb;Database=AriesContabilidad;Trusted_Connection=True;MultipleActiveResultSets=true"
+  },
+  "Application": {
+    "Name": "Aries Contabilidad",
+    "Version": "2.0.0",
+    "Company": "Your Company Name",
+    "CompanyId": "YOUR-COMPANY-ID"
+  },
+  "Security": {
+    "TokenKey": "YOUR-SECRET-KEY-HERE",
+    "TokenExpirationHours": 24,
+    "AllowedOrigins": [
+      "https://your-domain.com",
+      "http://localhost:4200"
+    ]
+  },
+  "Features": {
+    "EnableAuditLog": true,
+    "EnableBackup": true,
+    "MaxConcurrentUsers": 10
+  }
+} 
