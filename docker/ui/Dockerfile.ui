@@ -7,21 +7,17 @@ RUN apt-get update && apt-get install -y python3 && ln -s /usr/bin/python3 /usr/
 # Copy solution and project files
 COPY *.sln .
 COPY src/UI/Aries.Contabilidad/*.csproj ./src/UI/Aries.Contabilidad/
-COPY src/Core/Aries.Contabilidad.Core/*.csproj ./src/Core/Aries.Contabilidad.Core/
 COPY src/Core/AriesContador.Core/*.csproj ./src/Core/AriesContador.Core/
-COPY src/Core/AriesContador.Data/*.csproj ./src/Core/AriesContador.Data/
-COPY src/Services/Aries.WebAPI/*.csproj ./src/Services/Aries.WebAPI/
-COPY src/Services/Aries.WebServices/*.csproj ./src/Services/Aries.WebServices/
 
 # Restore dependencies
-RUN dotnet restore
+RUN dotnet restore src/UI/Aries.Contabilidad/Aries.Contabilidad.csproj
 RUN dotnet workload install wasm-tools
 
 # Copy the rest of the source code
 COPY src ./src
 
 # Publish the application
-RUN dotnet publish "src/UI/Aries.Contabilidad/Aries.Contabilidad.csproj" -c Release -o /app/publish
+RUN dotnet publish src/UI/Aries.Contabilidad/Aries.Contabilidad.csproj -c Release -o /app/publish
 
 # Final stage - Nginx to serve static files
 FROM nginx:alpine

@@ -1,46 +1,43 @@
 @page "/companies"
-@using Aries.Contabilidad.Core.Models
+@using Aries.Contabilidad.Models.DTOs
 @using Aries.Contabilidad.Services
 @inject IClientCompanyService CompanyService
 @inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
 
-<h3>Empresas</h3>
+<h3>Companies</h3>
 
 <div class="mb-3">
-    <button class="btn btn-primary" @onclick="NavigateToCreate">Nueva Empresa</button>
+    <a href="/companies/create" class="btn btn-primary">Create New Company</a>
 </div>
 
-@if (_companies == null)
+@if (companies == null)
 {
-    <p>Cargando...</p>
-}
-else if (!_companies.Any())
-{
-    <p>No hay empresas registradas.</p>
+    <p>Loading...</p>
 }
 else
 {
     <table class="table">
         <thead>
             <tr>
-                <th>Nombre</th>
-                <th>Identificación Fiscal</th>
-                <th>Teléfono</th>
-                <th>Email</th>
-                <th>Acciones</th>
+                <th>Code</th>
+                <th>Name</th>
+                <th>ID Type</th>
+                <th>Number ID</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var company in _companies)
+            @foreach (var company in companies)
             {
                 <tr>
-                    <td>@company.Name</td>
-                    <td>@company.TaxId</td>
-                    <td>@company.Phone</td>
-                    <td>@company.Email</td>
+                    <td>@company.Code</td>
+                    <td>@company.CompanyName</td>
+                    <td>@company.IdType</td>
+                    <td>@company.NumberId</td>
                     <td>
-                        <button class="btn btn-sm btn-info" @onclick="() => NavigateToEdit(company.Id)">Editar</button>
-                        <button class="btn btn-sm btn-danger" @onclick="() => DeleteCompany(company.Id)">Eliminar</button>
+                        <a href="/companies/edit/@company.Id" class="btn btn-sm btn-primary">Edit</a>
+                        <button class="btn btn-sm btn-danger" @onclick="() => DeleteCompany(company.Id)">Delete</button>
                     </td>
                 </tr>
             }
@@ -49,33 +46,19 @@ else
 }
 
 @code {
-    private IEnumerable<Company> _companies;
+    private IEnumerable<CompanyDto>? companies;
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadCompanies();
+        companies = await CompanyService.GetAllCompaniesAsync();
     }
 
-    private async Task LoadCompanies()
+    private async Task DeleteCompany(int id)
     {
-        _companies = await CompanyService.GetAllCompaniesAsync();
-    }
-
-    private void NavigateToCreate()
-    {
-        NavigationManager.NavigateTo("/companies/create");
-    }
-
-    private void NavigateToEdit(Guid id)
-    {
-        NavigationManager.NavigateTo($"/companies/edit/{id}");
-    }
-
-    private async Task DeleteCompany(Guid id)
-    {
-        if (await CompanyService.DeleteCompanyAsync(id))
+        if (await JSRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to delete this company?"))
         {
-            await LoadCompanies();
+            await CompanyService.DeleteCompanyAsync(id);
+            companies = await CompanyService.GetAllCompaniesAsync();
         }
     }
 } 

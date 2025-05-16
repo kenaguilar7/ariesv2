@@ -1,61 +1,51 @@
-@using Aries.Contabilidad.Core.Models
+@using Aries.Contabilidad.Models.DTOs
+@using Aries.Contabilidad.Models.Enums
 
-<EditForm Model="@Company" OnValidSubmit="@HandleValidSubmit">
+<EditForm Model="@Company" OnValidSubmit="@OnValidSubmit">
     <DataAnnotationsValidator />
     <ValidationSummary />
 
-    <div class="form-group mb-3">
-        <label for="name">Nombre</label>
-        <InputText id="name" @bind-Value="Company.Name" class="form-control" />
-        <ValidationMessage For="@(() => Company.Name)" />
+    <div class="form-group">
+        <label for="companyName">Company Name</label>
+        <InputText id="companyName" @bind-Value="Company.CompanyName" class="form-control" />
+        <ValidationMessage For="@(() => Company.CompanyName)" />
     </div>
 
-    <div class="form-group mb-3">
-        <label for="taxId">Identificación Fiscal</label>
-        <InputText id="taxId" @bind-Value="Company.TaxId" class="form-control" />
-        <ValidationMessage For="@(() => Company.TaxId)" />
+    <div class="form-group">
+        <label for="code">Code</label>
+        <InputText id="code" @bind-Value="Company.Code" class="form-control" />
+        <ValidationMessage For="@(() => Company.Code)" />
     </div>
 
-    <div class="form-group mb-3">
-        <label for="address">Dirección</label>
+    <div class="form-group">
+        <label for="idType">ID Type</label>
+        <InputSelect id="idType" @bind-Value="Company.IdType" class="form-control">
+            @foreach (var idType in Enum.GetValues(typeof(IdType)))
+            {
+                <option value="@idType">@idType</option>
+            }
+        </InputSelect>
+    </div>
+
+    <div class="form-group">
+        <label for="numberId">Number ID</label>
+        <InputText id="numberId" @bind-Value="Company.NumberId" class="form-control" />
+        <ValidationMessage For="@(() => Company.NumberId)" />
+    </div>
+
+    <div class="form-group">
+        <label for="address">Address</label>
         <InputText id="address" @bind-Value="Company.Address" class="form-control" />
         <ValidationMessage For="@(() => Company.Address)" />
     </div>
 
-    <div class="form-group mb-3">
-        <label for="phone">Teléfono</label>
-        <InputText id="phone" @bind-Value="Company.Phone" class="form-control" />
-        <ValidationMessage For="@(() => Company.Phone)" />
-    </div>
-
-    <div class="form-group mb-3">
-        <label for="email">Email</label>
-        <InputText id="email" @bind-Value="Company.Email" class="form-control" />
-        <ValidationMessage For="@(() => Company.Email)" />
-    </div>
-
-    <div class="form-group mb-3">
-        <label for="website">Sitio Web</label>
-        <InputText id="website" @bind-Value="Company.Website" class="form-control" />
-        <ValidationMessage For="@(() => Company.Website)" />
-    </div>
-
-    <button type="submit" class="btn btn-primary">Guardar</button>
-    <button type="button" class="btn btn-secondary" @onclick="OnCancel">Cancelar</button>
+    <button type="submit" class="btn btn-primary">@ButtonText</button>
+    <button type="button" class="btn btn-secondary" @onclick="OnCancel">Cancel</button>
 </EditForm>
 
 @code {
-    [Parameter]
-    public Company Company { get; set; } = new Company();
-
-    [Parameter]
-    public EventCallback<Company> OnSubmit { get; set; }
-
-    [Parameter]
-    public EventCallback OnCancel { get; set; }
-
-    private async Task HandleValidSubmit()
-    {
-        await OnSubmit.InvokeAsync(Company);
-    }
+    [Parameter] public CompanyDto Company { get; set; } = new();
+    [Parameter] public string ButtonText { get; set; } = "Save";
+    [Parameter] public EventCallback OnValidSubmit { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
 } 

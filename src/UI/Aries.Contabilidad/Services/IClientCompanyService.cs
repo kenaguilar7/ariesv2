@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Aries.Contabilidad.Core.Models;
+using Aries.Contabilidad.Models.DTOs;
 
 namespace Aries.Contabilidad.Services
 {
@@ -11,10 +11,10 @@ namespace Aries.Contabilidad.Services
     /// </summary>
     public interface IClientCompanyService
     {
-        Task<IEnumerable<Company>> GetAllCompaniesAsync();
-        Task<Company> GetCompanyByIdAsync(Guid id);
-        Task<Company> CreateCompanyAsync(Company company);
-        Task<Company> UpdateCompanyAsync(Company company);
-        Task<bool> DeleteCompanyAsync(Guid id);
+        Task<IEnumerable<CompanyDto>> GetAllCompaniesAsync();
+        Task<CompanyDto> GetCompanyByIdAsync(int id);
+        Task<CompanyDto> CreateCompanyAsync(CompanyDto company);
+        Task<CompanyDto> UpdateCompanyAsync(CompanyDto company);
+        Task DeleteCompanyAsync(int id);
     }
 } 

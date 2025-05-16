@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Json;
 using System.Threading.Tasks;
-using Aries.Contabilidad.Core.Models;
-using Aries.Contabilidad.Core.Services;
+using Aries.Contabilidad.Models.DTOs;
 
 namespace Aries.Contabilidad.Services
 {
@@ -12,41 +14,43 @@ namespace Aries.Contabilidad.Services
     /// </summary>
     public class ClientCompanyService : IClientCompanyService
     {
-        private readonly ICoreCompanyService _coreService;
+        private readonly HttpClient _httpClient;
+        private const string ApiEndpoint = "Company";
 
-        public ClientCompanyService(ICoreCompanyService coreService)
+        public ClientCompanyService(IHttpClientFactory httpClientFactory)
         {
-            _coreService = coreService ?? throw new ArgumentNullException(nameof(coreService));
+            _httpClient = httpClientFactory.CreateClient("AriesAPI");
         }
 
-        public async Task<IEnumerable<Company>> GetAllCompaniesAsync()
+        public async Task<IEnumerable<CompanyDto>> GetAllCompaniesAsync()
         {
-            // In the future, this will make an HTTP GET request
-            return await _coreService.GetAllCompaniesAsync();
+            return await _httpClient.GetFromJsonAsync<IEnumerable<CompanyDto>>($"{ApiEndpoint}/getAll") 
+                ?? Enumerable.Empty<CompanyDto>();
         }
 
-        public async Task<Company> GetCompanyByIdAsync(Guid id)
+        public async Task<CompanyDto> GetCompanyByIdAsync(int id)
         {
-            // In the future, this will make an HTTP GET request
-            return await _coreService.GetCompanyByIdAsync(id);
+            return await _httpClient.GetFromJsonAsync<CompanyDto>($"{ApiEndpoint}/{id}");
         }
 
-        public async Task<Company> CreateCompanyAsync(Company company)
+        public async Task<CompanyDto> CreateCompanyAsync(CompanyDto companyDto)
         {
-            // In the future, this will make an HTTP POST request
-            return await _coreService.CreateCompanyAsync(company);
+            var response = await _httpClient.PostAsJsonAsync(ApiEndpoint, companyDto);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<CompanyDto>();
         }
 
-        public async Task<Company> UpdateCompanyAsync(Company company)
+        public async Task<CompanyDto> UpdateCompanyAsync(CompanyDto companyDto)
         {
-            // In the future, this will make an HTTP PUT request
-            return await _coreService.UpdateCompanyAsync(company);
+            var response = await _httpClient.PutAsJsonAsync($"{ApiEndpoint}/{companyDto.Id}", companyDto);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<CompanyDto>();
         }
 
-        public async Task<bool> DeleteCompanyAsync(Guid id)
+        public async Task DeleteCompanyAsync(int id)
         {
-            // In the future, this will make an HTTP DELETE request
-            return await _coreService.DeleteCompanyAsync(id);
+            var response = await _httpClient.DeleteAsync($"{ApiEndpoint}/{id}");
+            response.EnsureSuccessStatusCode();
         }
     }
 } 

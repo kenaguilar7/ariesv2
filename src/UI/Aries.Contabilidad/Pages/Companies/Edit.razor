@@ -1,46 +1,45 @@
-@page "/companies/edit/{Id:guid}"
-@using Aries.Contabilidad.Core.Models
+@page "/companies/edit/{Id:int}"
+@using Aries.Contabilidad.Models.DTOs
 @using Aries.Contabilidad.Services
 @inject IClientCompanyService CompanyService
 @inject NavigationManager NavigationManager
 
-<h3>Editar Empresa</h3>
+<h3>Edit Company</h3>
 
-@if (_company == null)
+@if (company == null)
 {
-    <p>Cargando...</p>
+    <p>Loading...</p>
 }
 else
 {
-    <CompanyForm Company="@_company" OnSubmit="@HandleSubmit" OnCancel="@HandleCancel" />
+    <CompanyForm 
+        Company="@company"
+        ButtonText="Update"
+        OnValidSubmit="@HandleValidSubmit"
+        OnCancel="@HandleCancel" />
 }
 
 @code {
     [Parameter]
-    public Guid Id { get; set; }
+    public int Id { get; set; }
 
-    private Company _company;
+    private CompanyDto? company;
 
     protected override async Task OnInitializedAsync()
     {
-        _company = await CompanyService.GetCompanyByIdAsync(Id);
-        if (_company == null)
+        company = await CompanyService.GetCompanyByIdAsync(Id);
+        if (company == null)
         {
             NavigationManager.NavigateTo("/companies");
         }
     }
 
-    private async Task HandleSubmit(Company company)
+    private async Task HandleValidSubmit()
     {
-        try
+        if (company != null)
         {
             await CompanyService.UpdateCompanyAsync(company);
             NavigationManager.NavigateTo("/companies");
-        }
-        catch (Exception ex)
-        {
-            // TODO: Handle error appropriately
-            Console.WriteLine(ex.Message);
         }
     }
 
