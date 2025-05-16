@@ -1,0 +1,61 @@
+@using Aries.Contabilidad.Core.Models
+
+<EditForm Model="@Company" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-group mb-3">
+        <label for="name">Nombre</label>
+        <InputText id="name" @bind-Value="Company.Name" class="form-control" />
+        <ValidationMessage For="@(() => Company.Name)" />
+    </div>
+
+    <div class="form-group mb-3">
+        <label for="taxId">Identificación Fiscal</label>
+        <InputText id="taxId" @bind-Value="Company.TaxId" class="form-control" />
+        <ValidationMessage For="@(() => Company.TaxId)" />
+    </div>
+
+    <div class="form-group mb-3">
+        <label for="address">Dirección</label>
+        <InputText id="address" @bind-Value="Company.Address" class="form-control" />
+        <ValidationMessage For="@(() => Company.Address)" />
+    </div>
+
+    <div class="form-group mb-3">
+        <label for="phone">Teléfono</label>
+        <InputText id="phone" @bind-Value="Company.Phone" class="form-control" />
+        <ValidationMessage For="@(() => Company.Phone)" />
+    </div>
+
+    <div class="form-group mb-3">
+        <label for="email">Email</label>
+        <InputText id="email" @bind-Value="Company.Email" class="form-control" />
+        <ValidationMessage For="@(() => Company.Email)" />
+    </div>
+
+    <div class="form-group mb-3">
+        <label for="website">Sitio Web</label>
+        <InputText id="website" @bind-Value="Company.Website" class="form-control" />
+        <ValidationMessage For="@(() => Company.Website)" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Guardar</button>
+    <button type="button" class="btn btn-secondary" @onclick="OnCancel">Cancelar</button>
+</EditForm>
+
+@code {
+    [Parameter]
+    public Company Company { get; set; } = new Company();
+
+    [Parameter]
+    public EventCallback<Company> OnSubmit { get; set; }
+
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+
+    private async Task HandleValidSubmit()
+    {
+        await OnSubmit.InvokeAsync(Company);
+    }
+} 

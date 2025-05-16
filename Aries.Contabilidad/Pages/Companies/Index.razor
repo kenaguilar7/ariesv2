@@ -1,0 +1,81 @@
+@page "/companies"
+@using Aries.Contabilidad.Core.Models
+@using Aries.Contabilidad.Services
+@inject IClientCompanyService CompanyService
+@inject NavigationManager NavigationManager
+
+<h3>Empresas</h3>
+
+<div class="mb-3">
+    <button class="btn btn-primary" @onclick="NavigateToCreate">Nueva Empresa</button>
+</div>
+
+@if (_companies == null)
+{
+    <p>Cargando...</p>
+}
+else if (!_companies.Any())
+{
+    <p>No hay empresas registradas.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Identificación Fiscal</th>
+                <th>Teléfono</th>
+                <th>Email</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var company in _companies)
+            {
+                <tr>
+                    <td>@company.Name</td>
+                    <td>@company.TaxId</td>
+                    <td>@company.Phone</td>
+                    <td>@company.Email</td>
+                    <td>
+                        <button class="btn btn-sm btn-info" @onclick="() => NavigateToEdit(company.Id)">Editar</button>
+                        <button class="btn btn-sm btn-danger" @onclick="() => DeleteCompany(company.Id)">Eliminar</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private IEnumerable<Company> _companies;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCompanies();
+    }
+
+    private async Task LoadCompanies()
+    {
+        _companies = await CompanyService.GetAllCompaniesAsync();
+    }
+
+    private void NavigateToCreate()
+    {
+        NavigationManager.NavigateTo("/companies/create");
+    }
+
+    private void NavigateToEdit(Guid id)
+    {
+        NavigationManager.NavigateTo($"/companies/edit/{id}");
+    }
+
+    private async Task DeleteCompany(Guid id)
+    {
+        if (await CompanyService.DeleteCompanyAsync(id))
+        {
+            await LoadCompanies();
+        }
+    }
+} 

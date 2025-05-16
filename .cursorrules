@@ -1,0 +1,26 @@
+{
+    "tabSize": 4,
+    "useTabs": false,
+    "trimTrailingWhitespace": true,
+    "insertFinalNewline": true,
+    "formatOnSave": true,
+    "reference": "https://github.com/kenaguilar7/aries-desktop",
+    "ignore": [
+        "**/bin/**",
+        "**/obj/**",
+        "**/node_modules/**",
+        "**/.vs/**",
+        "**/packages/**",
+        "**/*.user",
+        "**/*.suo"
+    ],
+    "fileTypes": {
+        "cs": {
+            "bracketSpacing": true,
+            "bracketSameLine": false
+        },
+        "csproj": {
+            "tabSize": 2
+        }
+    }
+} 

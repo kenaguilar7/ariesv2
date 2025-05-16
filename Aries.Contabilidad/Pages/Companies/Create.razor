@@ -1,0 +1,32 @@
+@page "/companies/create"
+@using Aries.Contabilidad.Core.Models
+@using Aries.Contabilidad.Services
+@inject IClientCompanyService CompanyService
+@inject NavigationManager NavigationManager
+
+<h3>Nueva Empresa</h3>
+
+<CompanyForm Company="@_company" OnSubmit="@HandleSubmit" OnCancel="@HandleCancel" />
+
+@code {
+    private Company _company = new Company();
+
+    private async Task HandleSubmit(Company company)
+    {
+        try
+        {
+            await CompanyService.CreateCompanyAsync(company);
+            NavigationManager.NavigateTo("/companies");
+        }
+        catch (Exception ex)
+        {
+            // TODO: Handle error appropriately
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+    private void HandleCancel()
+    {
+        NavigationManager.NavigateTo("/companies");
+    }
+} 
