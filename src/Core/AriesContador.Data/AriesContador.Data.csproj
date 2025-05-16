@@ -5,13 +5,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Dapper" Version="2.0.78" />
-    <PackageReference Include="MySql.Data" Version="8.3.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <ProjectReference Include="..\AriesContador.Core\AriesContador.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Core\AriesContador.Core\AriesContador.Core.csproj" />
+    <PackageReference Include="Dapper" Version="2.0.78" />
+    <PackageReference Include="MySql.Data" Version="8.3.0" />
   </ItemGroup>
 
 </Project>

@@ -1,0 +1,38 @@
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+
+# Install Python for WebAssembly compilation
+RUN apt-get update && apt-get install -y python3 && ln -s /usr/bin/python3 /usr/bin/python
+
+# Copy solution and project files
+COPY *.sln .
+COPY src/UI/Aries.Contabilidad/*.csproj ./src/UI/Aries.Contabilidad/
+COPY src/Core/Aries.Contabilidad.Core/*.csproj ./src/Core/Aries.Contabilidad.Core/
+COPY src/Core/AriesContador.Core/*.csproj ./src/Core/AriesContador.Core/
+COPY src/Core/AriesContador.Data/*.csproj ./src/Core/AriesContador.Data/
+COPY src/Services/Aries.WebAPI/*.csproj ./src/Services/Aries.WebAPI/
+COPY src/Services/Aries.WebServices/*.csproj ./src/Services/Aries.WebServices/
+
+# Restore dependencies
+RUN dotnet restore
+RUN dotnet workload install wasm-tools
+
+# Copy the rest of the source code
+COPY src ./src
+
+# Publish the application
+RUN dotnet publish "src/UI/Aries.Contabilidad/Aries.Contabilidad.csproj" -c Release -o /app/publish
+
+# Final stage - Nginx to serve static files
+FROM nginx:alpine
+WORKDIR /usr/share/nginx/html
+
+# Copy the published files to nginx
+COPY --from=build /app/publish/wwwroot .
+COPY docker/ui/nginx.conf /etc/nginx/nginx.conf
+
+# Expose port 80
+EXPOSE 80
+
+# Start Nginx
+CMD ["nginx", "-g", "daemon off;"] 
