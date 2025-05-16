@@ -107,6 +107,7 @@ bld/
 [Oo]bj/
 [Ll]og/
 [Ll]ogs/
+*.tar
 
 # DocFX
 .cache/
