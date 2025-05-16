@@ -74,7 +74,6 @@ docs/_site/
 docs/api/
 docs/obj/
 _site/
-api/
 
 # OS generated files
 .DS_Store
