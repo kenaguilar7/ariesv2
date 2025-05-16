@@ -11,14 +11,70 @@ obj/
 *.exe
 *.pdb
 *.log
+*.vspscc
+*.vssscc
+*_i.c
+*_p.c
+*.ncb
+*.sdf
+*.opensdf
+*.opendb
+*.VC.db
 
 # NuGet packages
 packages/
 *.nupkg
+project.lock.json
+project.fragment.lock.json
+artifacts/
 
 # IDE
 .idea/
 .vscode/
+*.swp
+*.swo
+*~
+
+# Configuration files
+**/appsettings*.json
+**/app.config
+**/web.config
+**/*.config
+**/*.Development.json
+**/*.Production.json
+**/*.Staging.json
+**/*.Local.json
+**/launchSettings.json
+**/*.pubxml
+**/*.pubxml.user
+
+# Environment files
+.env
+.env.*
+*.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Secrets and keys
+**/*.[Ss]ecret*
+**/*.[Kk]ey*
+**/*.pfx
+**/*.key
+**/*.pem
+**/*.cert
+**/*.crt
+**/*.cer
+**/*.p12
+**/*.keystore
+
+# Documentation build output
+docs/_site/
+docs/api/
+docs/obj/
+_site/
+api/
 
 # OS generated files
 .DS_Store
@@ -27,4 +83,51 @@ packages/
 .Spotlight-V100
 .Trashes
 ehthumbs.db
-Thumbs.db 
+Thumbs.db
+
+# Logs and databases
+*.log
+*.sqlite
+*.sqlite3
+*.db
+*.mdf
+*.ldf
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# DocFX
+.cache/
+_exported_templates/
+_template/
+_themes/
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.swp
+*.~*
+
+# Coverage results
+coverage/
+*.coverage
+*.coveragexml
+TestResults/
+
+# User-specific files
+*.rsuser
+*.userosscache
+*.sln.docstates 
