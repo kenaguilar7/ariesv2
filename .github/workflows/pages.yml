@@ -27,39 +27,44 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '7.0.x'
+          dotnet-version: '8.0.x'
 
       - name: Install dependencies
         run: |
           dotnet workload install wasm-tools
-          dotnet workload install maui-blazor
 
       - name: Restore UI project
         run: |
           echo "Restoring UI project dependencies..."
           dotnet restore "./src/UI/Aries.Contabilidad/Aries.Contabilidad.csproj"
 
-      - name: Build UI project
+      - name: Build and Publish UI project
         run: |
-          echo "Building UI project..."
+          echo "Publishing UI project..."
           dotnet publish "./src/UI/Aries.Contabilidad/Aries.Contabilidad.csproj" \
             --configuration Release \
             --output ./publish \
-            --no-restore
+            -p:PublishTrimmed=false \
+            -p:BlazorEnableCompression=false \
+            --self-contained true
 
       - name: Verify published files
         run: |
           echo "Checking published files..."
+          echo "wwwroot contents:"
           ls -la ./publish/wwwroot
-          ls -la ./publish/wwwroot/css
-          ls -la ./publish/wwwroot/lib/bootstrap/dist/css
-          ls -la ./publish/wwwroot/_framework
-          ls -la ./publish/wwwroot/_content || true
+          echo "Framework contents:"
+          ls -la ./publish/wwwroot/_framework || true
+          echo "CSS contents:"
+          ls -la ./publish/wwwroot/css || true
+          echo "Bootstrap contents:"
+          ls -la ./publish/wwwroot/lib/bootstrap/dist/css || true
 
-      - name: Change base-tag in index.html
+      - name: Update base path in index.html
         run: |
-          echo "Updating base tag..."
-          sed -i 's/<base href="\/" \/>/<base href="\/ariesv2\/" \/>/g' ./publish/wwwroot/index.html
+          echo "Updating base path..."
+          sed -i 's|<base href="/"|<base href="/ariesv2/"|g' ./publish/wwwroot/index.html
+          cat ./publish/wwwroot/index.html
 
       - name: Copy index.html to 404.html
         run: cp ./publish/wwwroot/index.html ./publish/wwwroot/404.html
