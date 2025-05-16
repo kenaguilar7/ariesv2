@@ -33,44 +33,26 @@ jobs:
         run: |
           echo "Current directory contents:"
           ls -la
-          echo "Solution files found:"
-          find . -name "*.sln"
+          echo "UI project location:"
+          ls -la src/UI/Aries.Contabilidad
 
-      - name: Restore main solution
+      - name: Install dependencies
         run: |
-          echo "Restoring main solution..."
-          dotnet restore "./aries.contabilidad.2.0.sln"
+          dotnet workload install wasm-tools
+          dotnet workload install maui-blazor
 
-      - name: Restore WebAPI solution
+      - name: Restore UI project
         run: |
-          echo "Restoring WebAPI solution..."
-          dotnet restore "./src/Services/Aries.WebAPI/Aries.WebAPI.sln"
+          echo "Restoring UI project dependencies..."
+          dotnet restore "./src/UI/Aries.Contabilidad/Aries.Contabilidad.csproj"
 
-      - name: Build main solution
+      - name: Build UI project
         run: |
-          echo "Building main solution..."
-          dotnet build "./aries.contabilidad.2.0.sln" --configuration Release --no-restore
-
-      - name: Build WebAPI solution
-        run: |
-          echo "Building WebAPI solution..."
-          dotnet build "./src/Services/Aries.WebAPI/Aries.WebAPI.sln" --configuration Release --no-restore
-
-      - name: Install DocFX
-        run: |
-          echo "Installing DocFX..."
-          dotnet tool install --global docfx
-          docfx --version
-
-      - name: Create docs directory if not exists
-        run: mkdir -p docs/_site
-
-      - name: Build Documentation
-        run: |
-          echo "Building documentation..."
-          docfx docs/docfx.json
-          echo "Verifying _site directory contents:"
-          ls -la docs/_site
+          echo "Building UI project..."
+          dotnet publish "./src/UI/Aries.Contabilidad/Aries.Contabilidad.csproj" \
+            --configuration Release \
+            --output ./publish \
+            --no-restore
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
@@ -78,7 +60,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v2
         with:
-          path: docs/_site
+          path: ./publish/wwwroot
           retention-days: 1
 
   deploy:
