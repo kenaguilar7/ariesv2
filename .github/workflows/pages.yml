@@ -18,7 +18,7 @@ concurrency:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
@@ -29,25 +29,32 @@ jobs:
         with:
           dotnet-version: '7.0.x'
 
-      - name: List solution files
+      - name: List files and directories
         run: |
-          dir /s /b *.sln
-          echo "Current directory:"
-          pwd
-          echo "Directory contents:"
-          dir
+          echo "Current directory contents:"
+          ls -la
+          echo "Solution files found:"
+          find . -name "*.sln"
 
-      - name: Restore dependencies
+      - name: Restore main solution
         run: |
-          echo "Restoring dependencies for solution..."
+          echo "Restoring main solution..."
           dotnet restore "./aries.contabilidad.2.0.sln"
-        continue-on-error: false
 
-      - name: Build solution
+      - name: Restore WebAPI solution
         run: |
-          echo "Building solution in Release configuration..."
+          echo "Restoring WebAPI solution..."
+          dotnet restore "./src/Services/Aries.WebAPI/Aries.WebAPI.sln"
+
+      - name: Build main solution
+        run: |
+          echo "Building main solution..."
           dotnet build "./aries.contabilidad.2.0.sln" --configuration Release --no-restore
-        continue-on-error: false
+
+      - name: Build WebAPI solution
+        run: |
+          echo "Building WebAPI solution..."
+          dotnet build "./src/Services/Aries.WebAPI/Aries.WebAPI.sln" --configuration Release --no-restore
 
       - name: Install DocFX
         run: |
@@ -55,12 +62,15 @@ jobs:
           dotnet tool install --global docfx
           docfx --version
 
+      - name: Create docs directory if not exists
+        run: mkdir -p docs/_site
+
       - name: Build Documentation
         run: |
           echo "Building documentation..."
           docfx docs/docfx.json
           echo "Verifying _site directory contents:"
-          dir docs/_site
+          ls -la docs/_site
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
@@ -68,7 +78,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v2
         with:
-          path: ./docs/_site
+          path: docs/_site
           retention-days: 1
 
   deploy:
