@@ -1,6 +1,7 @@
 ﻿using AriesContador.Core.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using AriesContador.Core.Models.Companies;
 
 namespace Aries.WebAPI.Controllers
 {
@@ -17,53 +18,61 @@ namespace Aries.WebAPI.Controllers
         }
 
         [HttpGet("getAll")]
-        public async Task<IActionResult> GetAll() 
-            => Ok(await administrationService.GetAllCompanies());
-
-        [HttpDelete("Delete/{id}")]
-        public async Task<IActionResult> Delete(string id) 
+        public async Task<IActionResult> GetAll()
         {
             try
             {
-                
-                var company = new AriesContador.Core.Models.Companies.Company{ Code = id }; 
-                await administrationService.DeleteCompany(company); 
+                var companies = await administrationService.GetAllCompanies();
+                return Ok(companies);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetAll: {ex}");
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+        [HttpDelete("Delete/{id}")]
+        public async Task<IActionResult> Delete(string id)
+        {
+            try
+            {
+                var company = new Company { Code = id };
+                await administrationService.DeleteCompany(company);
                 return Ok();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw;
+                return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
 
         [HttpGet("BuildCode")]
-        public async Task<IActionResult> BuildNewCode() 
+        public async Task<IActionResult> BuildNewCode()
         {
             try
             {
                 var code = await administrationService.GetCompanyConsecutive();
-                return Ok(new { Code= code });
+                return Ok(new { Code = code });
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                throw;
+                return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
 
         [HttpPost("Create")]
-        public async Task<IActionResult> Create([FromBody] AriesContador.Core.Models.Companies.Company company)
+        public async Task<IActionResult> Create([FromBody] Company company)
         {
             try
             {
                 await administrationService.CreateCompany(company);
-                return Ok();
+                return Ok(company);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
-                throw;
+                return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
-        
     }
 }

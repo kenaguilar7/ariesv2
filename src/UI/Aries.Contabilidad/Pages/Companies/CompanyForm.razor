@@ -5,47 +5,144 @@
     <DataAnnotationsValidator />
     <ValidationSummary />
 
-    <div class="form-group">
-        <label for="companyName">Company Name</label>
-        <InputText id="companyName" @bind-Value="Company.CompanyName" class="form-control" />
-        <ValidationMessage For="@(() => Company.CompanyName)" />
-    </div>
+    <div class="card">
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-md-8">
+                    <label>Seleccione</label>
+                    <InputSelect @bind-Value="Company.CompanyType" class="form-select">
+                        @foreach (var type in Enum.GetValues(typeof(CompanyType)))
+                        {
+                            <option value="@type">@type</option>
+                        }
+                    </InputSelect>
+                </div>
+                <div class="col-md-4">
+                    <label>Buscar por Código</label>
+                    <InputText @bind-Value="Company.Code" class="form-control" />
+                    <small class="text-success">Código Próxima Compañía: @NextCompanyCode</small>
+                </div>
+            </div>
 
-    <div class="form-group">
-        <label for="code">Code</label>
-        <InputText id="code" @bind-Value="Company.Code" class="form-control" />
-        <ValidationMessage For="@(() => Company.Code)" />
-    </div>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label>Tipo de Identificación</label>
+                    <InputSelect @bind-Value="Company.IdType" class="form-select">
+                        @foreach (var idType in Enum.GetValues(typeof(IdType)))
+                        {
+                            <option value="@idType">@idType</option>
+                        }
+                    </InputSelect>
+                </div>
+                <div class="col-md-6">
+                    <label>Identificación</label>
+                    <InputText @bind-Value="Company.NumberId" class="form-control" placeholder="3-___-______" />
+                </div>
+            </div>
 
-    <div class="form-group">
-        <label for="idType">ID Type</label>
-        <InputSelect id="idType" @bind-Value="Company.IdType" class="form-control">
-            @foreach (var idType in Enum.GetValues(typeof(IdType)))
-            {
-                <option value="@idType">@idType</option>
-            }
-        </InputSelect>
-    </div>
+            <div class="row mb-3">
+                <div class="col-md-12">
+                    <label>Nombre</label>
+                    <InputText @bind-Value="Company.CompanyName" class="form-control" />
+                </div>
+            </div>
 
-    <div class="form-group">
-        <label for="numberId">Number ID</label>
-        <InputText id="numberId" @bind-Value="Company.NumberId" class="form-control" />
-        <ValidationMessage For="@(() => Company.NumberId)" />
-    </div>
+            <div class="row mb-3">
+                <div class="col-md-12">
+                    <label>Representante Legal</label>
+                    <InputText @bind-Value="Company.Op1" class="form-control" />
+                </div>
+            </div>
 
-    <div class="form-group">
-        <label for="address">Address</label>
-        <InputText id="address" @bind-Value="Company.Address" class="form-control" />
-        <ValidationMessage For="@(() => Company.Address)" />
-    </div>
+            <div class="row mb-3">
+                <div class="col-md-12">
+                    <label>ID Representante Legal</label>
+                    <InputText @bind-Value="Company.Op2" class="form-control" />
+                </div>
+            </div>
 
-    <button type="submit" class="btn btn-primary">@ButtonText</button>
-    <button type="button" class="btn btn-secondary" @onclick="OnCancel">Cancel</button>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label>Moneda (Registro Mov.)</label>
+                    <InputSelect @bind-Value="Company.MoneyType" class="form-select">
+                        @foreach (var moneyType in Enum.GetValues(typeof(CurrencyType)))
+                        {
+                            <option value="@moneyType">@moneyType</option>
+                        }
+                    </InputSelect>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-12">
+                    <label>Dirección</label>
+                    <InputText @bind-Value="Company.Address" class="form-control" />
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-12">
+                    <label>Correo Electrónico</label>
+                    <InputText @bind-Value="Company.Mail" class="form-control" />
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-12">
+                    <label>Dirección Web</label>
+                    <InputText @bind-Value="Company.WebSite" class="form-control" />
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label>Teléfono Fijo</label>
+                    <InputText @bind-Value="Company.PhoneNumber1" class="form-control" placeholder="( ) -" />
+                </div>
+                <div class="col-md-6">
+                    <label>Teléfono Celular</label>
+                    <InputText @bind-Value="Company.PhoneNumber2" class="form-control" placeholder="( ) -" />
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-12">
+                    <label>Observaciones</label>
+                    <InputTextArea @bind-Value="Company.Notes" class="form-control" rows="3" />
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-12">
+                    <div class="form-check">
+                        <InputCheckbox @bind-Value="Company.IsActive" class="form-check-input" id="isActive" />
+                        <label class="form-check-label" for="isActive">Compañía Activa</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12 text-end">
+                    <button type="button" class="btn btn-secondary me-2" @onclick="OnCancel">
+                        <i class="fas fa-times"></i> Cerrar
+                    </button>
+                    <button type="button" class="btn btn-danger me-2" @onclick="OnClear">
+                        <i class="fas fa-eraser"></i> Limpiar
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> @ButtonText
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </EditForm>
 
 @code {
     [Parameter] public CompanyDto Company { get; set; } = new();
-    [Parameter] public string ButtonText { get; set; } = "Save";
+    [Parameter] public string ButtonText { get; set; } = "Guardar";
     [Parameter] public EventCallback OnValidSubmit { get; set; }
     [Parameter] public EventCallback OnCancel { get; set; }
+    [Parameter] public EventCallback OnClear { get; set; }
+    [Parameter] public string NextCompanyCode { get; set; } = "C228";
 } 

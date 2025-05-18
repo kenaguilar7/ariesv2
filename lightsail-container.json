@@ -1,0 +1,25 @@
+{
+    "containers": {
+        "aries-ui": {
+            "image": "kenaguilar7/ariesv2-ui:latest",
+            "ports": {
+                "80": "HTTP"
+            },
+            "environment": {
+                "ASPNETCORE_ENVIRONMENT": "Production"
+            }
+        }
+    },
+    "publicEndpoint": {
+        "containerName": "aries-ui",
+        "containerPort": 80,
+        "healthCheck": {
+            "healthyThreshold": 2,
+            "unhealthyThreshold": 2,
+            "timeoutSeconds": 5,
+            "intervalSeconds": 30,
+            "path": "/",
+            "successCodes": "200-299"
+        }
+    }
+} 

@@ -27,6 +27,9 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        if(Id == 0){
+            return;
+        }
         company = await CompanyService.GetCompanyByIdAsync(Id);
         if (company == null)
         {

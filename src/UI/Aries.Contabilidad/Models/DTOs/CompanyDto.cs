@@ -10,6 +10,11 @@ namespace Aries.Contabilidad.Models.DTOs
     public class CompanyDto
     {
         public int Id { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public DateTime UpdateAt { get; set; }
+        public int CreatedBy { get; set; }
+        public int UpdatedBy { get; set; }
+        public bool Active { get; set; }
         public bool IsActive { get; set; } = true;
         public int UserId { get; set; }
         public string CopyFrom { get; set; }

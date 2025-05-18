@@ -18,10 +18,7 @@
   "Security": {
     "TokenKey": "YOUR-SECRET-KEY-HERE",
     "TokenExpirationHours": 24,
-    "AllowedOrigins": [
-      "https://your-domain.com",
-      "http://localhost:4200"
-    ]
+    "AllowCors": true
   },
   "Features": {
     "EnableAuditLog": true,

@@ -3,4 +3,6 @@ description:
 globs: 
 alwaysApply: true
 ---
-use this git as source, this is original project I'm migrating: https://github.com/kenaguilar7/aries-desktop
+Legacy project: https://github.com/kenaguilar7/aries-desktop
+
+Current remote git: https://github.com/kenaguilar7/ariesv2

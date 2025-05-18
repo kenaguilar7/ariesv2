@@ -4,16 +4,28 @@
 @inject IClientCompanyService CompanyService
 @inject NavigationManager NavigationManager
 
-<h3>Create Company</h3>
+<div class="container-fluid">
+    <h3 class="mb-4">Maestro de Compañías</h3>
 
-<CompanyForm 
-    Company="@company"
-    ButtonText="Create"
-    OnValidSubmit="@HandleValidSubmit"
-    OnCancel="@HandleCancel" />
+    <CompanyForm 
+        Company="@company"
+        ButtonText="Guardar"
+        OnValidSubmit="@HandleValidSubmit"
+        OnCancel="@HandleCancel"
+        OnClear="@HandleClear"
+        NextCompanyCode="@nextCompanyCode" />
+</div>
 
 @code {
     private CompanyDto company = new();
+    private string nextCompanyCode = "C228"; // This should be fetched from the API
+
+    protected override async Task OnInitializedAsync()
+    {
+        // TODO: Fetch next company code from API
+        // var response = await CompanyService.GetNextCompanyCode();
+        // nextCompanyCode = response.Code;
+    }
 
     private async Task HandleValidSubmit()
     {
@@ -24,5 +36,10 @@
     private void HandleCancel()
     {
         NavigationManager.NavigateTo("/companies");
+    }
+
+    private void HandleClear()
+    {
+        company = new CompanyDto();
     }
 } 

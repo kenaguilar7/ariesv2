@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Aries.Contabilidad.Models.DTOs;
+using Microsoft.Extensions.Logging;
 
 namespace Aries.Contabilidad.Services
 {
@@ -16,40 +19,69 @@ namespace Aries.Contabilidad.Services
     {
         private readonly HttpClient _httpClient;
         private const string ApiEndpoint = "Company";
+        private readonly JsonSerializerOptions _jsonOptions;
+        private readonly ILogger<ClientCompanyService> _logger;
 
-        public ClientCompanyService(IHttpClientFactory httpClientFactory)
+        public ClientCompanyService(IHttpClientFactory httpClientFactory, ILogger<ClientCompanyService> logger)
         {
             _httpClient = httpClientFactory.CreateClient("AriesAPI");
+            _logger = logger;
+            _jsonOptions = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                Converters = { new JsonStringEnumConverter() }
+            };
         }
 
         public async Task<IEnumerable<CompanyDto>> GetAllCompaniesAsync()
         {
-            return await _httpClient.GetFromJsonAsync<IEnumerable<CompanyDto>>($"{ApiEndpoint}/getAll") 
-                ?? Enumerable.Empty<CompanyDto>();
+            try
+            {
+                _logger.LogInformation("Attempting to get all companies from {Endpoint}", $"{_httpClient.BaseAddress}{ApiEndpoint}/getAll");
+                var response = await _httpClient.GetAsync($"{ApiEndpoint}/getAll");
+                _logger.LogInformation("Response status code: {StatusCode}", response.StatusCode);
+                
+                response.EnsureSuccessStatusCode();
+                var content = await response.Content.ReadAsStringAsync();
+                _logger.LogInformation("GetAllCompanies response: {Content}", content);
+                return JsonSerializer.Deserialize<IEnumerable<CompanyDto>>(content, _jsonOptions) 
+                    ?? Enumerable.Empty<CompanyDto>();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting companies. BaseAddress: {BaseAddress}, Error: {Error}", 
+                    _httpClient.BaseAddress, ex.Message);
+                throw;
+            }
         }
 
         public async Task<CompanyDto> GetCompanyByIdAsync(int id)
         {
-            return await _httpClient.GetFromJsonAsync<CompanyDto>($"{ApiEndpoint}/{id}");
+            var response = await _httpClient.GetAsync($"{ApiEndpoint}/{id}");
+            response.EnsureSuccessStatusCode();
+            var content = await response.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<CompanyDto>(content, _jsonOptions);
         }
 
         public async Task<CompanyDto> CreateCompanyAsync(CompanyDto companyDto)
         {
-            var response = await _httpClient.PostAsJsonAsync(ApiEndpoint, companyDto);
+            var response = await _httpClient.PostAsJsonAsync(ApiEndpoint, companyDto, _jsonOptions);
             response.EnsureSuccessStatusCode();
-            return await response.Content.ReadFromJsonAsync<CompanyDto>();
+            var content = await response.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<CompanyDto>(content, _jsonOptions);
         }
 
         public async Task<CompanyDto> UpdateCompanyAsync(CompanyDto companyDto)
         {
-            var response = await _httpClient.PutAsJsonAsync($"{ApiEndpoint}/{companyDto.Id}", companyDto);
+            var response = await _httpClient.PutAsJsonAsync($"{ApiEndpoint}/{companyDto.Id}", companyDto, _jsonOptions);
             response.EnsureSuccessStatusCode();
-            return await response.Content.ReadFromJsonAsync<CompanyDto>();
+            var content = await response.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<CompanyDto>(content, _jsonOptions);
         }
 
         public async Task DeleteCompanyAsync(int id)
         {
-            var response = await _httpClient.DeleteAsync($"{ApiEndpoint}/{id}");
+            var response = await _httpClient.DeleteAsync($"{ApiEndpoint}/Delete/{id}");
             response.EnsureSuccessStatusCode();
         }
     }

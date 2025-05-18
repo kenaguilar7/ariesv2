@@ -14,9 +14,8 @@ using AriesContador.Core.Repositories;
 using AriesContador.Data.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
-//var Configuration = builder.Build();
-// Add services to the container.
 
+// Add CORS before other services
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowBlazorApp",
@@ -42,7 +41,6 @@ builder.Services.AddScoped<IJournalEntryLineService, JournalEntryLineService>();
 builder.Services.AddScoped<IJournalEntryLineRepository, JournalEntryLineRepository>();
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
-
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddSwaggerGen(c => {
@@ -73,7 +71,6 @@ builder.Services.AddSwaggerGen(c => {
     });
 });
 
-
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
   .AddJwtBearer(options =>
   {
@@ -89,7 +86,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
       };
   });
 
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -99,9 +95,14 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+// Add CORS middleware before authentication
 app.UseCors("AllowBlazorApp");
 
-app.UseHttpsRedirection();
+// Remove HTTPS redirection in development
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseAuthentication();
 app.UseAuthorization();

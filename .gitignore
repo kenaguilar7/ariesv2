@@ -131,3 +131,4 @@ TestResults/
 *.rsuser
 *.userosscache
 *.sln.docstates 
+secrets/aws-cli-user.json
