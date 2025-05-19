@@ -132,3 +132,7 @@ TestResults/
 *.userosscache
 *.sln.docstates 
 secrets/aws-cli-user.json
+
+# Local configuration files
+**/appsettings.Local.json
+**/appsettings.Production.json

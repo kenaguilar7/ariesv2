@@ -3,14 +3,14 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
 # Copy csproj and restore dependencies
-COPY ["src/UI/Aries.Contabilidad/Aries.Contabilidad.csproj", "UI/Aries.Contabilidad/"]
-RUN dotnet restore "UI/Aries.Contabilidad/Aries.Contabilidad.csproj"
+COPY ["src/UI/Aries.Contabilidad/Aries.Contabilidad.csproj", "src/UI/Aries.Contabilidad/"]
+RUN dotnet restore "src/UI/Aries.Contabilidad/Aries.Contabilidad.csproj"
 
-# Copy the rest of the files
+# Copy everything else
 COPY . .
 
 # Publish the application
-WORKDIR "/src/UI/Aries.Contabilidad"
+WORKDIR "/src/src/UI/Aries.Contabilidad"
 RUN dotnet publish "Aries.Contabilidad.csproj" -c Release -o /app/publish
 
 # Runtime stage

@@ -1,31 +1,25 @@
-version: '3.8'
-
 services:
   api:
-    build:
-      context: .
-      dockerfile: src/Services/Aries.WebAPI/Dockerfile
+    image: kenaguilar7/ariesv2-api:latest
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:5000
     ports:
       - "5000:5000"
-    networks:
-      - aries-network
+    restart: unless-stopped
 
   ui:
     build:
       context: .
-      dockerfile: src/UI/Aries.Contabilidad/Dockerfile
+      dockerfile: docker/ui/Dockerfile.ui
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_ENVIRONMENT=Production
     ports:
-      - "80:80"
+      - "8080:80"
     depends_on:
       - api
-    networks:
-      - aries-network
+    restart: unless-stopped
 
 networks:
-  aries-network:
+  default:
     driver: bridge 

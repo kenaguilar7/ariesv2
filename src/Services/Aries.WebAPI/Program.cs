@@ -20,7 +20,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowBlazorApp",
         builder => builder
-            .WithOrigins("http://localhost:8080")
+            .WithOrigins("http://localhost:8080")  // UI endpoint
             .AllowAnyMethod()
             .AllowAnyHeader()
             .AllowCredentials());
