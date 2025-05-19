@@ -1,5 +1,7 @@
+using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Aries.Contabilidad.Models.Auth;
 using Microsoft.JSInterop;
 
@@ -9,20 +11,26 @@ namespace Aries.Contabilidad.Services
     {
         private readonly HttpClient _httpClient;
         private readonly IJSRuntime _jsRuntime;
+        private readonly JsonSerializerOptions _jsonOptions;
         private const string TOKEN_KEY = "auth_token";
         private const string USER_KEY = "user_data";
 
-        public AuthService(HttpClient httpClient, IJSRuntime jsRuntime)
+        public AuthService(IHttpClientFactory httpClientFactory, IJSRuntime jsRuntime)
         {
-            _httpClient = httpClient;
+            _httpClient = httpClientFactory.CreateClient("AriesAPI");
             _jsRuntime = jsRuntime;
+            _jsonOptions = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                Converters = { new JsonStringEnumConverter() }
+            };
         }
 
         public async Task<AuthResponse?> LoginAsync(LoginRequest loginModel)
         {
             try
             {
-                var response = await _httpClient.PostAsJsonAsync("auth/login", loginModel);
+                var response = await _httpClient.PostAsJsonAsync("Auth/login", loginModel);
                 if (response.IsSuccessStatusCode)
                 {
                     var result = await response.Content.ReadFromJsonAsync<AuthResponse>();
@@ -39,7 +47,7 @@ namespace Aries.Contabilidad.Services
                 }
                 return null;
             }
-            catch
+            catch(Exception e)
             {
                 return null;
             }

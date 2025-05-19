@@ -7,30 +7,67 @@
 <div class="container-fluid">
     <h3 class="mb-4">Maestro de Compañías</h3>
 
-    <CompanyForm 
-        Company="@company"
-        ButtonText="Guardar"
-        OnValidSubmit="@HandleValidSubmit"
-        OnCancel="@HandleCancel"
-        OnClear="@HandleClear"
-        NextCompanyCode="@nextCompanyCode" />
+    @if (isLoading)
+    {
+        <div class="d-flex justify-content-center">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+        </div>
+    }
+    else
+    {
+        <CompanyForm 
+            Company="@company"
+            ButtonText="Guardar"
+            OnValidSubmit="@HandleValidSubmit"
+            OnCancel="@HandleCancel"
+            OnClear="@HandleClear"
+            NextCompanyCode="@nextCompanyCode" />
+    }
 </div>
 
 @code {
     private CompanyDto company = new();
-    private string nextCompanyCode = "C228"; // This should be fetched from the API
+    private string nextCompanyCode;
+    private bool isLoading = true;
 
     protected override async Task OnInitializedAsync()
     {
-        // TODO: Fetch next company code from API
-        // var response = await CompanyService.GetNextCompanyCode();
-        // nextCompanyCode = response.Code;
+        try
+        {
+            var response = await CompanyService.GetNextCompanyCode();
+            nextCompanyCode = response.Code;
+            company.Code = nextCompanyCode;
+            isLoading = false;
+        }
+        catch (Exception ex)
+        {
+            // TODO: Add proper error handling
+            Console.WriteLine($"Error fetching company code: {ex}");
+            isLoading = false;
+        }
     }
 
     private async Task HandleValidSubmit()
     {
-        await CompanyService.CreateCompanyAsync(company);
-        NavigationManager.NavigateTo("/companies");
+        try
+        {
+            isLoading = true;
+            company.CreatedAt = DateTime.Now;
+            company.UpdateAt = DateTime.Now;
+            company.Active = true;
+            company.IsActive = true;
+            
+            await CompanyService.CreateCompanyAsync(company);
+            NavigationManager.NavigateTo("/companies");
+        }
+        catch (Exception ex)
+        {
+            // TODO: Add proper error handling
+            Console.WriteLine($"Error creating company: {ex}");
+            isLoading = false;
+        }
     }
 
     private void HandleCancel()
@@ -38,8 +75,24 @@
         NavigationManager.NavigateTo("/companies");
     }
 
-    private void HandleClear()
+    private async Task HandleClear()
     {
-        company = new CompanyDto();
+        try
+        {
+            isLoading = true;
+            var response = await CompanyService.GetNextCompanyCode();
+            company = new CompanyDto
+            {
+                Code = response.Code,
+                IsActive = true
+            };
+            isLoading = false;
+        }
+        catch (Exception ex)
+        {
+            // TODO: Add proper error handling
+            Console.WriteLine($"Error clearing form: {ex}");
+            isLoading = false;
+        }
     }
 } 

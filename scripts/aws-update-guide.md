@@ -39,7 +39,7 @@ ssh -V
 docker login
 
 # Test AWS connection
-ssh -i "C:\LightsailDefaultKey-us-east-1.pem" ubuntu@YOUR_INSTANCE_IP "echo 'Connection successful'"
+ssh -i "C:\aries-dev-server.pem" ubuntu@54.80.155.87 "echo 'Connection successful'"
 ```
 
 ## Pre-Update Checklist
@@ -94,7 +94,7 @@ docker compose build --no-cache
 
 # Test locally
 docker compose up -d
-curl localhost:80
+curl localhost:8080
 curl localhost:5000
 ```
 
@@ -112,7 +112,7 @@ docker push kenaguilar7/ariesv2-api:latest
 ### 3. Server Update
 ```bash
 # Connect to server
-ssh -i "C:\LightsailDefaultKey-us-east-1.pem" ubuntu@YOUR_INSTANCE_IP
+ssh -i "C:\aries-dev-server.pem" ubuntu@54.144.10.65
 
 # Navigate to app directory
 cd ~/ariesv2

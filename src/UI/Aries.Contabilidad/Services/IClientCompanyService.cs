@@ -16,5 +16,6 @@ namespace Aries.Contabilidad.Services
         Task<CompanyDto> CreateCompanyAsync(CompanyDto company);
         Task<CompanyDto> UpdateCompanyAsync(CompanyDto company);
         Task DeleteCompanyAsync(int id);
+        Task<CompanyCodeDto> GetNextCompanyCode();
     }
 } 

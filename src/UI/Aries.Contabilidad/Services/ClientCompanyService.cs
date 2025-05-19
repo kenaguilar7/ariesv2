@@ -65,10 +65,21 @@ namespace Aries.Contabilidad.Services
 
         public async Task<CompanyDto> CreateCompanyAsync(CompanyDto companyDto)
         {
-            var response = await _httpClient.PostAsJsonAsync(ApiEndpoint, companyDto, _jsonOptions);
-            response.EnsureSuccessStatusCode();
-            var content = await response.Content.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<CompanyDto>(content, _jsonOptions);
+            try
+            {
+                _logger.LogInformation("Creating company: {@Company}", companyDto);
+                var response = await _httpClient.PostAsJsonAsync($"{ApiEndpoint}/Create", companyDto, _jsonOptions);
+                response.EnsureSuccessStatusCode();
+                var content = await response.Content.ReadAsStringAsync();
+                _logger.LogInformation("Company created successfully: {Content}", content);
+                return JsonSerializer.Deserialize<CompanyDto>(content, _jsonOptions);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating company: {@Company}, Error: {Error}", 
+                    companyDto, ex.Message);
+                throw;
+            }
         }
 
         public async Task<CompanyDto> UpdateCompanyAsync(CompanyDto companyDto)
@@ -84,5 +95,28 @@ namespace Aries.Contabilidad.Services
             var response = await _httpClient.DeleteAsync($"{ApiEndpoint}/Delete/{id}");
             response.EnsureSuccessStatusCode();
         }
+
+        public async Task<CompanyCodeDto> GetNextCompanyCode()
+        {
+            try
+            {
+                _logger.LogInformation("Fetching next company code");
+                var response = await _httpClient.GetAsync($"{ApiEndpoint}/BuildCode");
+                response.EnsureSuccessStatusCode();
+                var content = await response.Content.ReadAsStringAsync();
+                _logger.LogInformation("Next company code response: {Content}", content);
+                return JsonSerializer.Deserialize<CompanyCodeDto>(content, _jsonOptions);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching next company code: {Error}", ex.Message);
+                throw;
+            }
+        }
+    }
+
+    public class CompanyCodeDto
+    {
+        public string Code { get; set; }
     }
 } 

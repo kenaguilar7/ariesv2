@@ -23,9 +23,11 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IClientCompanyService, ClientCompanyService>();
 
 // Configure HttpClient with environment-specific settings
+
+var apiBaseUrl = "http://localhost:5000/";
 builder.Services.AddHttpClient("AriesAPI", client =>
 {
-    client.BaseAddress = new Uri(apiSettings?.BaseUrl ?? "https://localhost:7103");
+    client.BaseAddress = new Uri(apiBaseUrl);
     client.Timeout = TimeSpan.FromSeconds(apiSettings?.Timeout ?? 30);
 })
 .AddHttpMessageHandler<AuthenticationHeaderHandler>();

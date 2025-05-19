@@ -198,7 +198,7 @@ docker save kenaguilar7/ariesv2-api:latest -o aries-api.tar
 # PowerShell commands (run from your local machine)
 $PEM_PATH = "C:\aries-dev-server.pem"
 $REMOTE_USER = "ubuntu"
-$REMOTE_IP = "54.80.155.87"
+$REMOTE_IP = "54.144.10.65"
 $REMOTE_DIR = "~/ariesv2"
 
 # First, ensure the remote directory exists
