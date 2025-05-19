@@ -1,42 +1,21 @@
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 WORKDIR /app
-
-# Install ASP.NET Core Runtime
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-       wget \
-    && wget https://packages.microsoft.com/config/debian/11/packages-microsoft-prod.deb -O packages-microsoft-prod.deb \
-    && dpkg -i packages-microsoft-prod.deb \
-    && rm packages-microsoft-prod.deb \
-    && apt-get update \
-    && apt-get install -y --no-install-recommends \
-       aspnetcore-runtime-6.0 \
-    && rm -rf /var/lib/apt/lists/* \
-    && apt-get clean
-
-EXPOSE 80
-EXPOSE 443
+EXPOSE 5000
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-# Copy solution and project files
 COPY *.sln .
 COPY src/Services/Aries.WebAPI/*.csproj ./src/Services/Aries.WebAPI/
 COPY src/Core/AriesContador.Core/*.csproj ./src/Core/AriesContador.Core/
 COPY src/Core/AriesContador.Data/*.csproj ./src/Core/AriesContador.Data/
 
-# Restore dependencies
 RUN dotnet restore "src/Services/Aries.WebAPI/Aries.WebAPI.csproj"
-
-# Copy the rest of the source code
 COPY src ./src
 
-# Build and publish
-RUN dotnet build "src/Services/Aries.WebAPI/Aries.WebAPI.csproj" -c Release -o /app/build
 RUN dotnet publish "src/Services/Aries.WebAPI/Aries.WebAPI.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app
 COPY --from=build /app/publish .
-ENTRYPOINT ["dotnet", "Aries.WebAPI.dll"] 
+ENTRYPOINT ["dotnet", "Aries.WebAPI.dll"]

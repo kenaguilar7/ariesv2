@@ -18,12 +18,12 @@ var builder = WebApplication.CreateBuilder(args);
 // Add CORS before other services
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowBlazorApp",
-        builder => builder
-            .WithOrigins("http://localhost:8080")  // UI endpoint
-            .AllowAnyMethod()
-            .AllowAnyHeader()
-            .AllowCredentials());
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
 });
 
 builder.Services.AddControllers();
@@ -96,13 +96,7 @@ if (app.Environment.IsDevelopment())
 }
 
 // Add CORS middleware before authentication
-app.UseCors("AllowBlazorApp");
-
-// Remove HTTPS redirection in development
-if (!app.Environment.IsDevelopment())
-{
-    app.UseHttpsRedirection();
-}
+app.UseCors();
 
 app.UseAuthentication();
 app.UseAuthorization();

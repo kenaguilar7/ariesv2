@@ -1,5 +1,8 @@
 services:
   api:
+    build:
+      context: .
+      dockerfile: docker/api/Dockerfile.api 
     image: kenaguilar7/ariesv2-api:latest
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
@@ -12,6 +15,7 @@ services:
     build:
       context: .
       dockerfile: docker/ui/Dockerfile.ui
+    image: kenaguilar7/ariesv2-ui:latest
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
     ports:
@@ -22,4 +26,4 @@ services:
 
 networks:
   default:
-    driver: bridge 
+    driver: bridge
