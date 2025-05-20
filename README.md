@@ -78,4 +78,111 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Acknowledgments
 
 - Original project by [@kenaguilar7](https://github.com/kenaguilar7)
-- Contributors and community members 
+- Contributors and community members
+
+# Aries Contabilidad 2.0 Database Setup
+
+This guide explains how to set up and manage the MySQL database for Aries Contabilidad 2.0 using Docker.
+
+## Prerequisites
+
+- Docker Desktop installed and running
+- PowerShell (Windows) or Terminal (macOS/Linux)
+- At least 2GB of free RAM for the database
+- At least 1GB of free disk space
+
+## Quick Start
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/kenaguilar7/ariesv2.git
+   cd ariesv2/data
+   ```
+
+2. Run the deployment script:
+   ```powershell
+   .\deploy-db.ps1
+   ```
+
+The script will:
+- Stop any existing database containers
+- Clean up old data
+- Create necessary directories
+- Start a fresh database instance
+- Wait for the database to be ready
+- Display connection details
+
+## Manual Setup
+
+If you prefer to set up manually:
+
+1. Navigate to the data directory:
+   ```bash
+   cd data
+   ```
+
+2. Create required directories:
+   ```bash
+   mkdir -p mysql/data mysql/init
+   ```
+
+3. Start the database:
+   ```bash
+   docker-compose -f docker-compose.db.yml up -d
+   ```
+
+## Connection Details
+
+- Host: localhost
+- Port: 3307
+- Database: AriesContabilidad_Local
+- Username: aries_user
+- Password: aries_pwd
+
+## Common Commands
+
+Stop the database:
+```bash
+docker-compose -f docker-compose.db.yml down
+```
+
+View logs:
+```bash
+docker-compose -f docker-compose.db.yml logs -f
+```
+
+Connect using MySQL client:
+```bash
+mysql -h localhost -P 3307 -u aries_user -paries_pwd AriesContabilidad_Local
+```
+
+## Database Structure
+
+The initialization files in `mysql/init` are executed in alphabetical order:
+
+1. `00-init.sql` - Creates database schema and tables
+2. `01-init.sql` - Sets up additional configuration
+3. `01-routines.sql` - Creates stored procedures
+4. Other `aries_*.sql` files - Load initial data
+
+## Troubleshooting
+
+1. If the database fails to start:
+   - Check Docker is running
+   - Ensure ports 3307 is not in use
+   - Check system has enough memory
+
+2. If you can't connect:
+   - Wait 30 seconds for database initialization
+   - Verify Docker container is running: `docker ps`
+   - Check logs: `docker-compose -f docker-compose.db.yml logs`
+
+## Complete Reset
+
+To completely reset the database:
+
+```bash
+docker-compose -f docker-compose.db.yml down -v
+rm -rf mysql/data
+docker-compose -f docker-compose.db.yml up -d
+``` 

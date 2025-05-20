@@ -136,3 +136,11 @@ secrets/aws-cli-user.json
 # Local configuration files
 **/appsettings.Local.json
 **/appsettings.Production.json
+
+# Database persistence folders
+data/mysql/data/
+data/mysql/logs/
+data/mysql/backups/
+
+# Keep init scripts
+!data/mysql/init/

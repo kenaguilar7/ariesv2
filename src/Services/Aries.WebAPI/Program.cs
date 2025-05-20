@@ -15,21 +15,26 @@ using AriesContador.Data.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add CORS before other services
-builder.Services.AddCors(options =>
-{
-    options.AddDefaultPolicy(policy =>
-    {
-        policy.AllowAnyOrigin()
-              .AllowAnyMethod()
-              .AllowAnyHeader();
-    });
-});
-
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// Configure CORS for authentication
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(builder =>
+    {
+        builder
+            .WithOrigins(
+                "http://54.144.10.65:8080",
+                "http://localhost:8080"
+            )
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .WithExposedHeaders("WWW-Authenticate");
+    });
+});
 
 builder.Services.AddTransient<IConnectionString, ConnectionString>();
 builder.Services.AddScoped<IAdministrationService, AdministrationService>();
@@ -88,15 +93,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
-// Add CORS middleware before authentication
+// Important: UseCors must come before UseAuthentication
 app.UseCors();
+
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseAuthentication();
 app.UseAuthorization();

@@ -1,0 +1,29 @@
+{
+    "development": {
+        "host": "localhost",
+        "port": 3306,
+        "user": "root",
+        "password": "", /* Replace with your MySQL root password */
+        "database": "aries",
+        "charset": "utf8mb4",
+        "connectionLimit": 10
+    },
+    "test": {
+        "host": "localhost",
+        "port": 3306,
+        "user": "root",
+        "password": "", /* Replace with your MySQL root password */
+        "database": "aries_test",
+        "charset": "utf8mb4",
+        "connectionLimit": 5
+    },
+    "production": {
+        "host": "localhost",
+        "port": 3306,
+        "user": "aries_user",
+        "password": "", /* Set a secure password for production */
+        "database": "aries",
+        "charset": "utf8mb4",
+        "connectionLimit": 20
+    }
+} 

@@ -1,5 +1,6 @@
 ﻿using AriesContador.Core.Models.Users;
 using AriesContador.Core.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -22,6 +23,7 @@ namespace Aries.WebAPI.Controllers
         }
 
         [HttpPost("login")]
+        [AllowAnonymous]
         public IActionResult Login([FromBody]Login userLogin)
         {
             var users = _administrationService.GetAllUsers();

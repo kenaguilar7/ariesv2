@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  mysql:
+    container_name: aries_mysql_local
+    image: mysql:8.0
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: aries_root_pwd
+      MYSQL_DATABASE: AriesContabilidad_Local
+      MYSQL_USER: aries_user
+      MYSQL_PASSWORD: aries_pwd
+    volumes:
+      - ./mysql/data:/var/lib/mysql
+      - ./mysql/init:/docker-entrypoint-initdb.d
+    command: --default-authentication-plugin=mysql_native_password
+    restart: unless-stopped 

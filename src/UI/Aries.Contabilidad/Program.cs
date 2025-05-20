@@ -24,7 +24,7 @@ builder.Services.AddScoped<IClientCompanyService, ClientCompanyService>();
 
 // Configure HttpClient with environment-specific settings
 
-var apiBaseUrl = "http://localhost:5000/";
+var apiBaseUrl = apiSettings?.BaseUrl ?? "http://localhost:5000";
 builder.Services.AddHttpClient("AriesAPI", client =>
 {
     client.BaseAddress = new Uri(apiBaseUrl);

@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: aries_mysql_local
+    environment:
+      MYSQL_ROOT_PASSWORD: aries_root_pwd
+      MYSQL_DATABASE: AriesContabilidad_Local
+      MYSQL_USER: aries_user
+      MYSQL_PASSWORD: aries_pwd
+    ports:
+      - "3307:3306"
+    volumes:
+      - ./mysql/data:/var/lib/mysql
+      - ./mysql/init:/docker-entrypoint-initdb.d
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5 

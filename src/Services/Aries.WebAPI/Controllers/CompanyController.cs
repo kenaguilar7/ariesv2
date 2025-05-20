@@ -5,7 +5,7 @@ using AriesContador.Core.Models.Companies;
 
 namespace Aries.WebAPI.Controllers
 {
-   // [Authorize]
+    [Authorize]
     [ApiController]
     [Route("[controller]")]
     public class CompanyController : ControllerBase
