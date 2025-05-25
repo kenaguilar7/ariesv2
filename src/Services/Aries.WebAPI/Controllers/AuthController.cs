@@ -11,7 +11,7 @@ namespace Aries.WebAPI.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class AuthController : ControllerBase
+    public class AuthController : AriesBaseController
     {
         private readonly IConfiguration _config;
         private readonly IAdministrationService _administrationService;
@@ -26,33 +26,48 @@ namespace Aries.WebAPI.Controllers
         [AllowAnonymous]
         public IActionResult Login([FromBody]Login userLogin)
         {
-            var users = _administrationService.GetAllUsers();
-            if (users.Any(u => u.UserName.ToLower() == userLogin.UserId.ToLower() && u.Password == userLogin.Password))
+            try
             {
-                var tokenString = GenerateToken();
-                var webToken = new WebToken()
+                if (!ModelState.IsValid)
                 {
-                    Token = tokenString,
-                    User = users.First(u=> u.UserName.ToLower() == userLogin.UserId.ToLower())
-                }; 
+                    return HandleValidationError();
+                }
 
-                return Ok(webToken);
+                var users = _administrationService.GetAllUsers();
+                var user = users.FirstOrDefault(u => u.UserName.ToLower() == userLogin.UserId.ToLower() && u.Password == userLogin.Password);
+                
+                if (user != null)
+                {
+                    var tokenString = GenerateToken(user);
+                    var webToken = new WebToken()
+                    {
+                        Token = tokenString,
+                        User = user
+                    }; 
+
+                    return Ok(webToken);
+                }
+
+                return Unauthorized();
             }
-
-            return Unauthorized();
+            catch (Exception ex)
+            {
+                return HandleException(ex);
+            }
         }
 
-        private string GenerateToken()
+        private string GenerateToken(User user)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_config["Jwt:Key"]);
             var tokenDescriptor = new SecurityTokenDescriptor
             {
-                //Subject = new ClaimsIdentity(new Claim[]
-                //{
-                //  new Claim(ClaimTypes.Name, "name here"),
-                //  new Claim(ClaimTypes.Email, "email@here")
-                //}),
+                Subject = new ClaimsIdentity(new[]
+                {
+                    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                    new Claim("UserId", user.Id.ToString()),
+                    new Claim(ClaimTypes.Name, user.Name)
+                }),
                 Expires = DateTime.UtcNow.AddDays(3),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
@@ -60,6 +75,4 @@ namespace Aries.WebAPI.Controllers
             return tokenHandler.WriteToken(token);
         }
     }
-
-
 }

@@ -1,0 +1,546 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Aries Contabilidad API",
+    "version": "2.0.0",
+    "description": "API for Aries Contabilidad accounting system"
+  },
+  "servers": [
+    {
+      "url": "http://54.144.10.65:5000",
+      "description": "Production server"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "Login": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          }
+        }
+      },
+      "WebToken": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string"
+          },
+          "user": {
+            "$ref": "#/components/schemas/User"
+          }
+        }
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "userName": {
+            "type": "string"
+          }
+        }
+      },
+      "Company": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          }
+        }
+      },
+      "JournalEntry": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "postingPeriodId": {
+            "type": "integer"
+          }
+        }
+      },
+      "JournalEntryLine": {
+        "type": "object",
+        "properties": {
+          "journalEntryId": {
+            "type": "integer"
+          }
+        }
+      },
+      "Account": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "paths": {
+    "/Auth/login": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Login to get access token",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Login"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful login",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebToken"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/User/GetAllUsers": {
+      "get": {
+        "tags": ["Users"],
+        "summary": "Get all users",
+        "responses": {
+          "200": {
+            "description": "List of users",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/User"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Company/getAll": {
+      "get": {
+        "tags": ["Companies"],
+        "summary": "Get all companies",
+        "responses": {
+          "200": {
+            "description": "List of companies",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Company"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Company/Delete/{id}": {
+      "delete": {
+        "tags": ["Companies"],
+        "summary": "Delete a company",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Company deleted successfully"
+          }
+        }
+      }
+    },
+    "/Company/BuildCode": {
+      "get": {
+        "tags": ["Companies"],
+        "summary": "Get a new company code",
+        "responses": {
+          "200": {
+            "description": "New company code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Company/Create": {
+      "post": {
+        "tags": ["Companies"],
+        "summary": "Create a new company",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Company"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Company created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Company"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/JournalEntry/CreateJournalEntry": {
+      "post": {
+        "tags": ["Journal Entries"],
+        "summary": "Create a new journal entry",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JournalEntry"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Journal entry ID",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/JournalEntry/GetConsecutiveNumber/{postingPeriodId}": {
+      "get": {
+        "tags": ["Journal Entries"],
+        "summary": "Get consecutive number for journal entry",
+        "parameters": [
+          {
+            "name": "postingPeriodId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "New consecutive number"
+          }
+        }
+      }
+    },
+    "/JournalEntry/GetJournalEntries/{postingPeriodId}": {
+      "get": {
+        "tags": ["Journal Entries"],
+        "summary": "Get journal entries for a posting period",
+        "parameters": [
+          {
+            "name": "postingPeriodId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of journal entries",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/JournalEntry"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/JournalEntry/UpdateJournalEntry": {
+      "post": {
+        "tags": ["Journal Entries"],
+        "summary": "Update a journal entry",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JournalEntry"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Journal entry updated successfully"
+          }
+        }
+      }
+    },
+    "/JournalEntry/DeleteJournalEntry": {
+      "post": {
+        "tags": ["Journal Entries"],
+        "summary": "Delete a journal entry",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JournalEntry"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Journal entry deleted successfully"
+          }
+        }
+      }
+    },
+    "/JournalEntryLine/CreateJournalEntryLine": {
+      "post": {
+        "tags": ["Journal Entry Lines"],
+        "summary": "Create a new journal entry line",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JournalEntryLine"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Journal entry line ID",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/JournalEntryLine/DeleteJournalEntryLine": {
+      "post": {
+        "tags": ["Journal Entry Lines"],
+        "summary": "Delete a journal entry line",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JournalEntryLine"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Journal entry line deleted successfully"
+          }
+        }
+      }
+    },
+    "/JournalEntryLine/FindJournalEntryLine/{journalEntryId}": {
+      "get": {
+        "tags": ["Journal Entry Lines"],
+        "summary": "Find journal entry lines by journal entry ID",
+        "parameters": [
+          {
+            "name": "journalEntryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of journal entry lines",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/JournalEntryLine"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/JournalEntryLine/UpdateJournalEntryLine": {
+      "post": {
+        "tags": ["Journal Entry Lines"],
+        "summary": "Update a journal entry line",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JournalEntryLine"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Journal entry line updated successfully"
+          }
+        }
+      }
+    },
+    "/PostingPeriod/GetPostingPeriods/{companyId}": {
+      "get": {
+        "tags": ["Posting Periods"],
+        "summary": "Get posting periods for a company",
+        "parameters": [
+          {
+            "name": "companyId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of posting periods"
+          }
+        }
+      }
+    },
+    "/Account/{companyId}/accounts": {
+      "get": {
+        "tags": ["Accounts"],
+        "summary": "Get accounts for a company",
+        "parameters": [
+          {
+            "name": "companyId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of accounts",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Account"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Account/FindAccount/{accountId}": {
+      "get": {
+        "tags": ["Accounts"],
+        "summary": "Find an account by ID",
+        "parameters": [
+          {
+            "name": "accountId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Account details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Account"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+} 

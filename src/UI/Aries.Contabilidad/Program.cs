@@ -5,10 +5,16 @@ using Aries.Contabilidad.Services;
 using Aries.Contabilidad.Configuration;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.Logging;
+using MudBlazor.Services;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
+
+// Load environment-specific configuration
+var environment = builder.HostEnvironment.Environment;
+builder.Configuration.AddJsonFile("appsettings.json", optional: false)
+                    .AddJsonFile($"appsettings.{environment}.json", optional: true);
 
 // Load configuration
 var apiSettings = builder.Configuration.GetSection("ApiSettings").Get<ApiSettings>();
@@ -17,14 +23,20 @@ var apiSettings = builder.Configuration.GetSection("ApiSettings").Get<ApiSetting
 builder.Logging.SetMinimumLevel(LogLevel.Information);
 
 // Register services
+builder.Services.AddMudServices();
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
 builder.Services.AddAuthorizationCore();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IClientCompanyService, ClientCompanyService>();
+builder.Services.AddScoped<IJournalEntryService, JournalEntryService>();
+builder.Services.AddScoped<IAccountService, AccountService>();
+builder.Services.AddScoped<IPostingPeriodService, PostingPeriodService>();
 
 // Configure HttpClient with environment-specific settings
-
 var apiBaseUrl = apiSettings?.BaseUrl ?? "http://localhost:5000";
+Console.WriteLine($"Environment: {environment}");
+Console.WriteLine($"API Base URL: {apiBaseUrl}");
+
 builder.Services.AddHttpClient("AriesAPI", client =>
 {
     client.BaseAddress = new Uri(apiBaseUrl);

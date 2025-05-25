@@ -1,10 +1,10 @@
 namespace Aries.Contabilidad.Models.Enums
 {
-    public enum CompanyType
-    {
-        Persona_Jurídica = 1,
-        Persona_Física = 2
-    }
+    //public enum CompanyType
+    //{
+    //    Persona_Jurídica = 1,
+    //    Persona_Física = 2
+    //}
 
     public enum IdType
     {

@@ -20,13 +20,13 @@
             <div class="row mb-3">
                 <div class="col-md-8">
                     <label>Tipo de Compañía <span class="text-danger">*</span></label>
-                    <InputSelect @bind-Value="Company.CompanyType" class="form-select">
-                        @foreach (var type in Enum.GetValues(typeof(CompanyType)))
+                    <InputSelect @bind-Value="Company.IdType" class="form-select">
+                        @foreach (var type in Enum.GetValues(typeof(IdType)))
                         {
                             <option value="@type">@type.ToString().Replace("_", " ")</option>
                         }
                     </InputSelect>
-                    <ValidationMessage For="@(() => Company.CompanyType)" />
+                    <ValidationMessage For="@(() => Company.IdType)" />
                 </div>
                 <div class="col-md-4">
                     <label>Código <span class="text-danger">*</span></label>
@@ -54,7 +54,7 @@
                 </div>
             </div>
 
-            @if (Company.CompanyType == CompanyType.Persona_Física)
+            @if (Company.IdType != IdType.CEDULA_JURIDICA)
             {
                 <div class="row mb-3">
                     <div class="col-md-12">

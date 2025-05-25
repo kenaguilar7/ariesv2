@@ -21,6 +21,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aries.Contabilidad", "src\U
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aries.WebServices", "src\Services\Aries.WebServices\Aries.WebServices.csproj", "{7462DF54-7E91-6F5B-3DBE-C6F47F8DED2E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aries.Integration.Tests", "src\Tests\Aries.Integration.Tests\Aries.Integration.Tests.csproj", "{D768B320-F754-F442-6675-9BC3BD9BC738}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -47,6 +49,10 @@ Global
 		{7462DF54-7E91-6F5B-3DBE-C6F47F8DED2E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7462DF54-7E91-6F5B-3DBE-C6F47F8DED2E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7462DF54-7E91-6F5B-3DBE-C6F47F8DED2E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D768B320-F754-F442-6675-9BC3BD9BC738}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D768B320-F754-F442-6675-9BC3BD9BC738}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D768B320-F754-F442-6675-9BC3BD9BC738}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D768B320-F754-F442-6675-9BC3BD9BC738}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -60,6 +66,7 @@ Global
 		{BBB7B94B-6E11-D9F1-7BA6-9ECA82DB22BF} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 		{858284C8-2CC1-41FE-8973-14894D30E26A} = {BBB7B94B-6E11-D9F1-7BA6-9ECA82DB22BF}
 		{7462DF54-7E91-6F5B-3DBE-C6F47F8DED2E} = {984BB9B3-3FA3-BE33-9484-CAC21695A33C}
+		{D768B320-F754-F442-6675-9BC3BD9BC738} = {984BB9B3-3FA3-BE33-9484-CAC21695A33C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {44818921-171E-4703-B0E0-BF6AB2E563B5}

@@ -2,12 +2,14 @@
 using AriesContador.Core.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System;
+
 namespace Aries.WebAPI.Controllers
 {
-    [Authorize]
+    //[Authorize]
     [ApiController]
     [Route("[controller]")]
-    public class UserController : ControllerBase
+    public class UserController : AriesBaseController
     {
         private readonly IAdministrationService administrationService;
 
@@ -19,8 +21,15 @@ namespace Aries.WebAPI.Controllers
         [HttpGet("GetAllUsers")]
         public IActionResult GetAllUsers()
         {
-            var list = administrationService.GetAllUsers();
-            return Ok(list); 
-        } 
+            try
+            {
+                var list = administrationService.GetAllUsers();
+                return Ok(list); 
+            }
+            catch (Exception ex)
+            {
+                return HandleException(ex);
+            }
+        }
     }
 }

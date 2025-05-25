@@ -5,10 +5,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Aries.WebAPI.Controllers
 {
-    [Authorize]
+    //[Authorize]
     [ApiController]
     [Route("[controller]")]
-    public class AccountController : ControllerBase
+    public class AccountController : AriesBaseController
     {
         private readonly IAccountService _accountService;
 
@@ -20,15 +20,29 @@ namespace Aries.WebAPI.Controllers
         [HttpGet("{companyId}/accounts")]
         public async Task<IActionResult> FindAccountByCompany(string companyId)
         {
-            var accounts = await _accountService.GetAccounts(companyId);
-            return Ok(accounts);
+            try
+            {
+                var accounts = await _accountService.GetAccounts(companyId);
+                return Ok(accounts);
+            }
+            catch (Exception ex)
+            {
+                return HandleException(ex);
+            }
         }
 
         [HttpGet("FindAccount/{accountId}")]
         public async Task<IActionResult> FindAccount(int accountId)
         {
-            var account = await _accountService.FindAccount(accountId);
-            return Ok(account);
+            try
+            {
+                var account = await _accountService.FindAccount(accountId);
+                return Ok(account);
+            }
+            catch (Exception ex)
+            {
+                return HandleException(ex);
+            }
         }
     }
 }

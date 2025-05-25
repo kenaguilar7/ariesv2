@@ -8,7 +8,7 @@ namespace Aries.WebAPI.Controllers
     [Authorize]
     [ApiController]
     [Route("[controller]")]
-    public class JournalEntryController : ControllerBase
+    public class JournalEntryController : AriesBaseController
     {
         private readonly IJournalEntryService _journalEntryService; 
         public JournalEntryController(IJournalEntryService journalEntryService)
@@ -19,8 +19,15 @@ namespace Aries.WebAPI.Controllers
         [HttpPost("CreateJournalEntry")]
         public async Task<IActionResult> CreateJournalEntry([FromBody] JournalEntry journalEntry)
         {
-            var id = await _journalEntryService.CreateJournalEntry(journalEntry);
-            return Ok(id);
+            try
+            {
+                var id = await _journalEntryService.CreateJournalEntry(journalEntry);
+                return Ok(id);
+            }
+            catch (Exception ex)
+            {
+                return HandleException(ex);
+            }
         }
 
         [HttpGet("GetConsecutiveNumber/{postingPeriodId}")]
@@ -40,8 +47,15 @@ namespace Aries.WebAPI.Controllers
         [HttpPost("UpdateJournalEntry")]
         public async Task<IActionResult> UpdateJournalEntry([FromBody] JournalEntry journalEntry)
         {
-            await _journalEntryService.UpdateJournalEntry(journalEntry);
-            return Ok();
+            try
+            {
+                await _journalEntryService.UpdateJournalEntry(journalEntry);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return HandleException(ex);
+            }
         }
 
         [HttpPost("DeleteJournalEntry")]

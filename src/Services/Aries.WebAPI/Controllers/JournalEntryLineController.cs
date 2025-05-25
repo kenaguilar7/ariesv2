@@ -8,7 +8,7 @@ namespace Aries.WebAPI.Controllers
     [Authorize]
     [ApiController]
     [Route("[controller]")]
-    public class JournalEntryLineController : ControllerBase
+    public class JournalEntryLineController : AriesBaseController
     {
         private IJournalEntryLineService _journalEntryLineService; 
 
@@ -21,8 +21,15 @@ namespace Aries.WebAPI.Controllers
         [HttpPost("CreateJournalEntryLine")]
         public async Task<IActionResult> CreateJournalEntryLine([FromBody] JournalEntryLine journalEntryLine)
         {
-            var id = await _journalEntryLineService.CreateJournalEntryLine(journalEntryLine);
-            return Ok(id); 
+            try
+            {
+                var id = await _journalEntryLineService.CreateJournalEntryLine(journalEntryLine);
+                return Ok(id); 
+            }
+            catch (Exception ex)
+            {
+                return HandleException(ex);
+            }
         }
 
         [HttpPost("DeleteJournalEntryLine")]
@@ -42,8 +49,19 @@ namespace Aries.WebAPI.Controllers
         [HttpPost("UpdateJournalEntryLine")]
         public async Task<IActionResult> UpdateJournalEntryLine([FromBody] JournalEntryLine journalEntryLine)
         {
-            await _journalEntryLineService.UpdateJournalEntryLine(journalEntryLine);
-            return Ok(); 
+            try
+            {
+                await _journalEntryLineService.UpdateJournalEntryLine(journalEntryLine);
+                return Ok(); 
+            }
+            catch (Exception ex)
+            {
+                return HandleException(ex);
+            }
+            if (!ModelState.IsValid)
+            {
+                return HandleValidationError();
+            }
         }
     }
 }

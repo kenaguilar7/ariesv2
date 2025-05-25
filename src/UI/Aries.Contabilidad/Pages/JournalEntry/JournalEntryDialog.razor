@@ -1,0 +1,173 @@
+@using Aries.Contabilidad.Models.Accounts
+@using Aries.Contabilidad.Models.JournalEntries
+@using Aries.Contabilidad.Models.Utils
+@using Aries.Contabilidad.Services
+@using MudBlazor
+
+@inject IJournalEntryService JournalEntryService
+
+<MudDialog>
+    <DialogContent>
+        <MudContainer Style="max-height: 600px; overflow-y: auto">
+            <MudGrid>
+                <MudItem xs="12" md="6">
+                    <MudTextField T="int" @bind-Value="Entry.Number" Label="Number" ReadOnly="true" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudSelect T="JournalEntryStatus" @bind="Entry.Status" Label="Status">
+                        @foreach (var status in Enum.GetValues(typeof(JournalEntryStatus)))
+                        {
+                            <MudSelectItem Value="@((JournalEntryStatus)status)">@status</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+
+                <MudItem xs="12">
+                    <MudText Typo="Typo.h6" Class="mb-4">Journal Entry Lines</MudText>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AddNewLine" Class="mb-4">
+                        Add Line
+                    </MudButton>
+                </MudItem>
+
+                <MudItem xs="12">
+                    <MudTable Items="@Entry.Lines" Dense="true" Hover="true">
+                        <HeaderContent>
+                            <MudTh>Account</MudTh>
+                            <MudTh>Reference</MudTh>
+                            <MudTh>Memo</MudTh>
+                            <MudTh>Date</MudTh>
+                            <MudTh>Currency</MudTh>
+                            <MudTh>Rate</MudTh>
+                            <MudTh>Amount</MudTh>
+                            <MudTh>Type</MudTh>
+                            <MudTh>Actions</MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd>
+                                <MudSelect T="int" Value="context.AccountId" ValueChanged="value => { context.AccountId = value; }" Label="Account">
+                                    @if (Accounts != null)
+                                    {
+                                        @foreach (var account in Accounts)
+                                        {
+                                            <MudSelectItem Value="@account.Id">@account.Name</MudSelectItem>
+                                        }
+                                    }
+                                </MudSelect>
+                            </MudTd>
+                            <MudTd>
+                                <MudTextField T="string" @bind-Value="context.Reference" />
+                            </MudTd>
+                            <MudTd>
+                                <MudTextField T="string" @bind-Value="context.Memo" />
+                            </MudTd>
+                            <MudTd>
+                                <MudDatePicker @bind="context.Date" />
+                            </MudTd>
+                            <MudTd>
+                                <MudSelect T="Currency" Value="context.Currency" ValueChanged="value => { context.Currency = value; }">
+                                    @foreach (var currency in Enum.GetValues(typeof(Currency)))
+                                    {
+                                        <MudSelectItem Value="@((Currency)currency)">@currency</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </MudTd>
+                            <MudTd>
+                                <MudNumericField T="decimal" @bind-Value="context.RateAmount" Format="N2" />
+                            </MudTd>
+                            <MudTd>
+                                <MudNumericField T="decimal" Value="context.Amount" ValueChanged="value => { context.Amount = value; CalculateTotals(); }" Format="N2" />
+                            </MudTd>
+                            <MudTd>
+                                <MudSelect T="DebOrCred" Value="context.DebOrCred" ValueChanged="value => { context.DebOrCred = value; CalculateTotals(); }">
+                                    @foreach (var type in Enum.GetValues(typeof(DebOrCred)))
+                                    {
+                                        <MudSelectItem Value="@((DebOrCred)type)">@type</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </MudTd>
+                            <MudTd>
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete" 
+                                             Color="Color.Error"
+                                             OnClick="@(() => RemoveLine(context))" />
+                            </MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                </MudItem>
+
+                <MudItem xs="12">
+                    <MudPaper Class="pa-4 mt-4">
+                        <MudGrid>
+                            <MudItem xs="6">
+                                <MudText><strong>Total Debits:</strong> @Entry.TotalDebits.ToString("N2")</MudText>
+                            </MudItem>
+                            <MudItem xs="6">
+                                <MudText><strong>Total Credits:</strong> @Entry.TotalCredits.ToString("N2")</MudText>
+                            </MudItem>
+                            <MudItem xs="12">
+                                <MudAlert Severity="@(Entry.IsBalanced ? Severity.Success : Severity.Error)">
+                                    @(Entry.IsBalanced ? "Entry is balanced" : "Entry is not balanced")
+                                </MudAlert>
+                            </MudItem>
+                        </MudGrid>
+                    </MudPaper>
+                </MudItem>
+            </MudGrid>
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit" Disabled="!Entry.IsBalanced">Save</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; }
+    [Parameter] public JournalEntryDto Entry { get; set; }
+    [Parameter] public List<Account> Accounts { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (Entry == null)
+        {
+            Entry = new JournalEntryDto
+            {
+                CreatedAt = DateTime.Now,
+                UpdatedAt = DateTime.Now,
+                Status = JournalEntryStatus.Progress
+            };
+        }
+    }
+
+    private void AddNewLine()
+    {
+        Entry.Lines.Add(new JournalEntryLineDto
+        {
+            JournalEntryId = Entry.Id,
+            Date = DateTime.Now,
+            RateAmount = 1.00m,
+            Currency = Currency.colones
+        });
+    }
+
+    private void RemoveLine(JournalEntryLineDto line)
+    {
+        Entry.Lines.Remove(line);
+        CalculateTotals();
+    }
+
+    private void CalculateTotals()
+    {
+        Entry.TotalDebits = Entry.Lines.Where(x => x.DebOrCred == DebOrCred.Debito).Sum(x => x.Amount);
+        Entry.TotalCredits = Entry.Lines.Where(x => x.DebOrCred == DebOrCred.Credito).Sum(x => x.Amount);
+        StateHasChanged();
+    }
+
+    private void Submit()
+    {
+        MudDialog.Close(DialogResult.Ok(Entry));
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+} 

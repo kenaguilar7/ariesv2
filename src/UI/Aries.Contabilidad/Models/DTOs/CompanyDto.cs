@@ -28,8 +28,8 @@ namespace Aries.Contabilidad.Models.DTOs
         [StringLength(100, ErrorMessage = "El nombre no puede exceder los 100 caracteres")]
         public string CompanyName { get; set; }
 
-        [Required(ErrorMessage = "El tipo de compañía es requerido")]
-        public CompanyType CompanyType { get; set; }
+        //[Required(ErrorMessage = "El tipo de compañía es requerido")]
+        //public CompanyType CompanyType { get; set; }
 
         [Required(ErrorMessage = "El tipo de identificación es requerido")]
         public IdType IdType { get; set; }

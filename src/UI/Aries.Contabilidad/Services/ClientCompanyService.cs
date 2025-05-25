@@ -67,6 +67,9 @@ namespace Aries.Contabilidad.Services
         {
             try
             {
+
+                var companyJson = JsonSerializer.Serialize(companyDto, _jsonOptions);
+
                 _logger.LogInformation("Creating company: {@Company}", companyDto);
                 var response = await _httpClient.PostAsJsonAsync($"{ApiEndpoint}/Create", companyDto, _jsonOptions);
                 response.EnsureSuccessStatusCode();

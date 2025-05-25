@@ -7,7 +7,7 @@ namespace Aries.WebAPI.Controllers
     [Authorize]
     [ApiController]
     [Route("[controller]")]
-    public class PostingPeriodController : ControllerBase
+    public class PostingPeriodController : AriesBaseController
     {
         private readonly IPostingPeriodService _postingPeriodService;
 
@@ -19,9 +19,15 @@ namespace Aries.WebAPI.Controllers
         [HttpGet("GetPostingPeriods/{companyId}")]
         public async Task<IActionResult> GetPostingPeriods(string companyId)
         {
-            var result = await _postingPeriodService.GetPostingPeriods(companyId);
-            return Ok(result);
+            try
+            {
+                var result = await _postingPeriodService.GetPostingPeriods(companyId);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return HandleException(ex);
+            }
         }
     }
-
 }

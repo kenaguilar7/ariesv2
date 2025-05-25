@@ -1,0 +1,385 @@
+{
+    "info": {
+        "_postman_id": "1a2b3c4d-5e6f-7g8h-9i0j-1k2l3m4n5o6p",
+        "name": "Aries Contabilidad API",
+        "description": "API collection for Aries Contabilidad accounting system",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "{{baseUrl}}",
+            "type": "string"
+        },
+        {
+            "key": "token",
+            "value": "{{token}}",
+            "type": "string"
+        }
+    ],
+    "auth": {
+        "type": "bearer",
+        "bearer": [
+            {
+                "key": "token",
+                "value": "{{token}}",
+                "type": "string"
+            }
+        ]
+    },
+    "event": [
+        {
+            "listen": "prerequest",
+            "script": {
+                "type": "text/javascript",
+                "exec": [
+                    "// You can add collection-level pre-request scripts here",
+                    "console.log('Running collection-level pre-request script');"
+                ]
+            }
+        }
+    ],
+    "item": [
+        {
+            "name": "Authentication",
+            "item": [
+                {
+                    "name": "Login",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "var jsonData = JSON.parse(responseBody);",
+                                    "if (jsonData.token) {",
+                                    "    pm.globals.set('token', jsonData.token);",
+                                    "    console.log('Token saved to global variable');",
+                                    "} else {",
+                                    "    console.log('No token found in response');",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"userId\": \"{{username}}\",\n    \"password\": \"{{password}}\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/Auth/login",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["Auth", "login"]
+                        },
+                        "description": "Login to get access token"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Users",
+            "item": [
+                {
+                    "name": "Get All Users",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/User/GetAllUsers",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["User", "GetAllUsers"]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Companies",
+            "item": [
+                {
+                    "name": "Get All Companies",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/Company/getAll",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["Company", "getAll"]
+                        }
+                    }
+                },
+                {
+                    "name": "Delete Company",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/Company/Delete/{{companyId}}",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["Company", "Delete", "{{companyId}}"]
+                        }
+                    }
+                },
+                {
+                    "name": "Build Company Code",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/Company/BuildCode",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["Company", "BuildCode"]
+                        }
+                    }
+                },
+                {
+                    "name": "Create Company",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"code\": \"{{companyCode}}\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/Company/Create",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["Company", "Create"]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Journal Entries",
+            "item": [
+                {
+                    "name": "Create Journal Entry",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"postingPeriodId\": {{postingPeriodId}}\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/JournalEntry/CreateJournalEntry",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["JournalEntry", "CreateJournalEntry"]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Consecutive Number",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/JournalEntry/GetConsecutiveNumber/{{postingPeriodId}}",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["JournalEntry", "GetConsecutiveNumber", "{{postingPeriodId}}"]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Journal Entries",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/JournalEntry/GetJournalEntries/{{postingPeriodId}}",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["JournalEntry", "GetJournalEntries", "{{postingPeriodId}}"]
+                        }
+                    }
+                },
+                {
+                    "name": "Update Journal Entry",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"id\": {{journalEntryId}},\n    \"postingPeriodId\": {{postingPeriodId}}\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/JournalEntry/UpdateJournalEntry",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["JournalEntry", "UpdateJournalEntry"]
+                        }
+                    }
+                },
+                {
+                    "name": "Delete Journal Entry",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"id\": {{journalEntryId}}\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/JournalEntry/DeleteJournalEntry",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["JournalEntry", "DeleteJournalEntry"]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Journal Entry Lines",
+            "item": [
+                {
+                    "name": "Create Journal Entry Line",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"journalEntryId\": {{journalEntryId}}\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/JournalEntryLine/CreateJournalEntryLine",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["JournalEntryLine", "CreateJournalEntryLine"]
+                        }
+                    }
+                },
+                {
+                    "name": "Delete Journal Entry Line",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"journalEntryId\": {{journalEntryId}}\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/JournalEntryLine/DeleteJournalEntryLine",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["JournalEntryLine", "DeleteJournalEntryLine"]
+                        }
+                    }
+                },
+                {
+                    "name": "Find Journal Entry Lines",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/JournalEntryLine/FindJournalEntryLine/{{journalEntryId}}",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["JournalEntryLine", "FindJournalEntryLine", "{{journalEntryId}}"]
+                        }
+                    }
+                },
+                {
+                    "name": "Update Journal Entry Line",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"journalEntryId\": {{journalEntryId}}\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/JournalEntryLine/UpdateJournalEntryLine",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["JournalEntryLine", "UpdateJournalEntryLine"]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Posting Periods",
+            "item": [
+                {
+                    "name": "Get Posting Periods",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/PostingPeriod/GetPostingPeriods/{{companyId}}",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["PostingPeriod", "GetPostingPeriods", "{{companyId}}"]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Accounts",
+            "item": [
+                {
+                    "name": "Get Company Accounts",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/Account/{{companyId}}/accounts",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["Account", "{{companyId}}", "accounts"]
+                        }
+                    }
+                },
+                {
+                    "name": "Find Account",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/Account/FindAccount/{{accountId}}",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["Account", "FindAccount", "{{accountId}}"]
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+} 

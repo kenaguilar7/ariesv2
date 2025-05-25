@@ -15,3 +15,17 @@ SET GLOBAL max_allowed_packet = 67108864;
 SET GLOBAL innodb_file_per_table = 1;
 
 SET FOREIGN_KEY_CHECKS = 1; 
+
+-- Create user if not exists
+CREATE USER IF NOT EXISTS 'kenneth'@'%' IDENTIFIED BY 'aries_pwd';
+
+-- Grant all privileges to the user for the database
+GRANT ALL PRIVILEGES ON AriesContabilidad_Local.* TO 'aries_user'@'%';
+
+-- Grant additional permissions that might be needed
+GRANT SUPER ON *.* TO 'aries_user'@'%';
+GRANT PROCESS ON *.* TO 'aries_user'@'%';
+GRANT RELOAD ON *.* TO 'aries_user'@'%';
+
+-- Make sure privileges are applied
+FLUSH PRIVILEGES; 

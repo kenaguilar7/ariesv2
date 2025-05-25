@@ -10,12 +10,12 @@ namespace Aries.Contabilidad.Models.Auth
         public string PhoneNumber { get; set; } = string.Empty;
         public string Mail { get; set; } = string.Empty;
         public string Memo { get; set; } = string.Empty;
-        public UserType UserType { get; set; }
+        //public UserType UserType { get; set; }
     }
 
-    public enum UserType
-    {
-        Usuario = 1,
-        Administrador = 2
-    }
+    //public enum UserType
+    //{
+    //    Usuario = 1,
+    //    Administrador = 2
+    //}
 } 

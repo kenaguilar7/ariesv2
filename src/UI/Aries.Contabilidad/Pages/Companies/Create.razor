@@ -58,7 +58,7 @@
             company.UpdateAt = DateTime.Now;
             company.Active = true;
             company.IsActive = true;
-            
+
             await CompanyService.CreateCompanyAsync(company);
             NavigationManager.NavigateTo("/companies");
         }

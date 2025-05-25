@@ -35,7 +35,6 @@ namespace Aries.Contabilidad.Services
                 var claims = new[]
                 {
                     new Claim(ClaimTypes.Name, user.UserName),
-                    new Claim(ClaimTypes.Role, user.UserType.ToString()),
                     new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
                 };
 
@@ -53,7 +52,6 @@ namespace Aries.Contabilidad.Services
             var claims = new[]
             {
                 new Claim(ClaimTypes.Name, authResponse.User.UserName),
-                new Claim(ClaimTypes.Role, authResponse.User.UserType.ToString()),
                 new Claim(ClaimTypes.NameIdentifier, authResponse.User.Id.ToString())
             };
 
