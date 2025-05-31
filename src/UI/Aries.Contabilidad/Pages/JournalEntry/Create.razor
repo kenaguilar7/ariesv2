@@ -1,0 +1,177 @@
+@page "/journal-entries/{CompanyId}/create"
+@using Aries.Contabilidad.Models.JournalEntries
+@using Aries.Contabilidad.Models.PostingPeriods
+@using Aries.Contabilidad.Services
+@using MudBlazor
+
+@inject IJournalEntryService JournalEntryService
+@inject IJournalEntryLineService JournalEntryLineService
+@inject IPostingPeriodService PostingPeriodService
+@inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
+    <MudText Typo="Typo.h4" Class="mb-4">Create Journal Entry</MudText>
+
+    <MudGrid>
+        <MudItem xs="12" sm="6">
+            <MudTextField @bind-Value="_journalEntry.Number" Label="Journal Entry Number" Variant="Variant.Outlined" />
+        </MudItem>
+    </MudGrid>
+
+    <MudText Typo="Typo.h6" Class="mt-4 mb-2">Journal Entry Status</MudText>
+@*     <MudRadioGroup @bind-SelectedOption="@_journalEntry.Status">
+        <MudRadio Option="@JournalEntryStatus.Draft" Color="Color.Primary">Draft</MudRadio>
+        <MudRadio Option="@JournalEntryStatus.Progress" Color="Color.Primary">Posted</MudRadio>
+    </MudRadioGroup> *@
+
+    <MudText Typo="Typo.h6" Class="mt-4 mb-2">Posting Period</MudText>
+    <MudSelect T="int" 
+        @bind-Value="_journalEntry.PostingPeriodId" 
+        ValueChanged="@OnPostingPeriodChanged" 
+        Label="Select Period" 
+        Variant="Variant.Outlined">
+        
+        @if (_postingPeriods != null)
+        {
+            @foreach (var period in _postingPeriods)
+            {
+                <MudSelectItem Value="@period.Id">@period.ToString()</MudSelectItem>
+            }
+        }
+    </MudSelect>
+
+    <MudText Typo="Typo.h6" Class="mt-4 mb-2">Journal Entry Lines</MudText>
+    <JournalEntryLinesGrid 
+        JournalEntry="@_journalEntry"
+        IsReadOnly="false"
+        OnLineAdded="HandleLineAdded"
+        OnLineUpdated="HandleLineUpdated"
+        OnLineDeleted="HandleLineDeleted" />
+
+    <MudPaper Class="d-flex justify-end pa-4 mt-4 gap-4">
+        <MudButton Variant="Variant.Filled" Color="Color.Default" OnClick="Cancel">Cancel</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveJournalEntry">Save</MudButton>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    [Parameter]
+    public string CompanyId { get; set; }
+
+    private JournalEntryDto _journalEntry = new()
+    {
+        Lines = new List<JournalEntryLineDto>(),
+        Status = JournalEntryStatus.Draft
+    };
+
+    private List<PostingPeriodDto> _postingPeriods;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _postingPeriods = await PostingPeriodService.GetPostingPeriodsAsync(CompanyId);
+            if (_postingPeriods?.Any() == true)
+            {
+                await LoadJournalEntryDataAsync(_postingPeriods.First().Id);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Failed to load posting periods", Severity.Error);
+        }
+    }
+
+    private async Task LoadJournalEntryDataAsync(int postingPeriodId)
+    {
+        try
+        {
+            // Get the next consecutive number for the journal entry
+            var consecutive = await JournalEntryService.GetConsecutiveNumberAsync(postingPeriodId);
+            
+            // Update the journal entry with new data
+            _journalEntry.Number = consecutive;
+            _journalEntry.PostingPeriodId = postingPeriodId;
+            _journalEntry.Status = JournalEntryStatus.Progress;
+            _journalEntry.CreatedAt = DateTime.Now;
+            _journalEntry.UpdatedAt = DateTime.Now;
+
+            // Get existing journal entries for this posting period
+            var entries = await JournalEntryService.GetJournalEntriesAsync(postingPeriodId, new JournalEntryFilter());
+            if (entries?.Any() == true)
+            {
+                // Get lines from the most recent journal entry as a template
+                var latestEntry = entries.OrderByDescending(e => e.Number).First();
+                var lines = await JournalEntryLineService.GetJournalEntryLinesAsync(latestEntry.Id);
+                
+                // Clear existing lines and add new ones as templates
+                _journalEntry.Lines.Clear();
+                foreach (var line in lines)
+                {
+                    var templateLine = new JournalEntryLineDto
+                    {
+                        AccountId = line.AccountId,
+                        AccountName = line.AccountName,
+                        AccountPath = line.AccountPath,
+                        Reference = "",
+                        Memo = "",
+                        Date = DateTime.Now,
+                        Currency = line.Currency,
+                        RateAmount = 1,
+                        Amount = 0,
+                        ForeignAmount = 0,
+                        DebOrCred = line.DebOrCred
+                    };
+                    _journalEntry.Lines.Add(templateLine);
+                }
+            }
+
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Failed to load journal entry data: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task OnPostingPeriodChanged(int newPostingPeriodId)
+    {
+        await LoadJournalEntryDataAsync(newPostingPeriodId);
+    }
+
+    private async Task HandleLineAdded(JournalEntryLineDto line)
+    {
+        // The line is already added to the Lines collection by the grid component
+        StateHasChanged();
+    }
+
+    private async Task HandleLineUpdated(JournalEntryLineDto line)
+    {
+        StateHasChanged();
+    }
+
+    private async Task HandleLineDeleted(JournalEntryLineDto line)
+    {
+        StateHasChanged();
+    }
+
+    private async Task SaveJournalEntry()
+    {
+        try
+        {
+            await JournalEntryService.CreateJournalEntryAsync(_journalEntry);
+            Snackbar.Add("Journal entry created successfully", Severity.Success);
+            NavigationManager.NavigateTo($"/journal-entries/{CompanyId}");
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Failed to create journal entry", Severity.Error);
+        }
+    }
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo($"/journal-entries/{CompanyId}");
+    }
+}

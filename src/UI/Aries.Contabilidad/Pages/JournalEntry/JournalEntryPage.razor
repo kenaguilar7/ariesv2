@@ -2,13 +2,8 @@
 @using Aries.Contabilidad.Models.Accounts
 @using Aries.Contabilidad.Models.JournalEntries
 @using Aries.Contabilidad.Models.PostingPeriods
-@using Aries.Contabilidad.Models.Utils
-@using Aries.Contabilidad.Services
-@using MudBlazor
-@using static System.Net.WebRequestMethods
-@inject IJournalEntryService JournalEntryService
-@inject IAccountService AccountService
-@inject IPostingPeriodService PostingPeriodService
+
+@inject HttpClient Http
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
 
@@ -20,8 +15,8 @@
             </MudItem>
             
             <MudItem xs="12" md="4">
-                <MudSelect T="int" Label="Posting Period" Value="selectedPostingPeriodId" 
-                          ValueChanged="SetPostingPeriod">
+                <MudSelect T="int" Label="Posting Period" @bind-Value="selectedPostingPeriodId" 
+                          @bind-Value:after="LoadJournalEntries">
                     @if (postingPeriods != null)
                     {
                         @foreach (var period in postingPeriods)
@@ -86,7 +81,7 @@
 
 @code {
     private List<JournalEntryDto> journalEntries;
-    private List<PostingPeriod> postingPeriods;
+    private List<PostingPeriodDto> postingPeriods;
     private List<Account> accounts;
     private int selectedPostingPeriodId;
 
@@ -101,17 +96,11 @@
         }
     }
 
-    private async Task SetPostingPeriod(int value)
-    {
-        selectedPostingPeriodId = value;
-        await LoadJournalEntries();
-    }
-
     private async Task LoadAccounts()
     {
         try
         {
-            accounts = await AccountService.GetAccountsAsync();
+            accounts = await Http.GetFromJsonAsync<List<Account>>("Account/GetAccounts");
         }
         catch (Exception ex)
         {
@@ -123,7 +112,7 @@
     {
         try
         {
-            postingPeriods = await PostingPeriodService.GetPostingPeriodsAsync();
+            postingPeriods = await Http.GetFromJsonAsync<List<PostingPeriodDto>>("PostingPeriod/GetPostingPeriods");
         }
         catch (Exception ex)
         {
@@ -135,7 +124,7 @@
     {
         try
         {
-            journalEntries = await JournalEntryService.GetJournalEntriesAsync(selectedPostingPeriodId);
+            journalEntries = await Http.GetFromJsonAsync<List<JournalEntryDto>>($"JournalEntry/GetJournalEntries/{selectedPostingPeriodId}");
         }
         catch (Exception ex)
         {
@@ -147,7 +136,7 @@
     {
         try
         {
-            var consecutive = await JournalEntryService.GetConsecutiveNumberAsync(selectedPostingPeriodId);
+            var consecutive = await Http.GetFromJsonAsync<int>($"JournalEntry/GetConsecutiveNumber/{selectedPostingPeriodId}");
             var parameters = new DialogParameters
             {
                 ["Entry"] = new JournalEntryDto
@@ -161,19 +150,19 @@
                 ["Accounts"] = accounts
             };
 
-            var dialog = await DialogService.ShowAsync<JournalEntryDialog>("New Journal Entry", parameters);
-            var result = await dialog.Result;
+            // var dialog = await DialogService.ShowAsync<JournalEntryDialog>("New Journal Entry", parameters);
+            // var result = await dialog.Result;
 
-            if (!result.Canceled)
-            {
-                var entry = (JournalEntryDto)result.Data;
-                var id = await JournalEntryService.CreateJournalEntryAsync(entry);
-                if (id > 0)
-                {
-                    await LoadJournalEntries();
-                    Snackbar.Add("Journal entry created successfully", Severity.Success);
-                }
-            }
+            // if (!result.Canceled)
+            // {
+            //     var entry = (JournalEntryDto)result.Data;
+            //     var response = await Http.PostAsJsonAsync("JournalEntry/CreateJournalEntry", entry);
+            //     if (response.IsSuccessStatusCode)
+            //     {
+            //         await LoadJournalEntries();
+            //         Snackbar.Add("Journal entry created successfully", Severity.Success);
+            //     }
+            // }
         }
         catch (Exception ex)
         {
@@ -191,16 +180,19 @@
                 ["Accounts"] = accounts
             };
 
-            var dialog = await DialogService.ShowAsync<JournalEntryDialog>("Edit Journal Entry", parameters);
-            var result = await dialog.Result;
+            // var dialog = await DialogService.ShowAsync<JournalEntryDialog>("Edit Journal Entry", parameters);
+            // var result = await dialog.Result;
 
-            if (!result.Canceled)
-            {
-                var updatedEntry = (JournalEntryDto)result.Data;
-                await JournalEntryService.UpdateJournalEntryAsync(updatedEntry);
-                await LoadJournalEntries();
-                Snackbar.Add("Journal entry updated successfully", Severity.Success);
-            }
+            // if (!result.Canceled)
+            // {
+            //     var updatedEntry = (JournalEntryDto)result.Data;
+            //     var response = await Http.PostAsJsonAsync("JournalEntry/UpdateJournalEntry", updatedEntry);
+            //     if (response.IsSuccessStatusCode)
+            //     {
+            //         await LoadJournalEntries();
+            //         Snackbar.Add("Journal entry updated successfully", Severity.Success);
+            //     }
+            // }
         }
         catch (Exception ex)
         {
@@ -212,9 +204,12 @@
     {
         try
         {
-            await JournalEntryService.DeleteJournalEntryAsync(entry);
-            await LoadJournalEntries();
-            Snackbar.Add("Journal entry deleted successfully", Severity.Success);
+            var response = await Http.PostAsJsonAsync("JournalEntry/DeleteJournalEntry", entry);
+            if (response.IsSuccessStatusCode)
+            {
+                await LoadJournalEntries();
+                Snackbar.Add("Journal entry deleted successfully", Severity.Success);
+            }
         }
         catch (Exception ex)
         {
