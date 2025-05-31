@@ -3,7 +3,7 @@ using System.Globalization;
 
 namespace Aries.Contabilidad.Models.PostingPeriods
 {
-    public class PostingPeriod : BaseModel
+    public class PostingPeriodDto : BaseModel
     {
         public string CompanyId { get; set; }
         public DateTime Date { get; set; }

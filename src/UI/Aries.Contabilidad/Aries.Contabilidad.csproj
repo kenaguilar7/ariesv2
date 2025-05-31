@@ -24,6 +24,10 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Services\Interface\" />
+  </ItemGroup>
+
   <Target Name="CopyAppSettingsToWWWRoot" BeforeTargets="Build">
     <Copy SourceFiles="appsettings.json" DestinationFolder="wwwroot" />
     <Copy SourceFiles="appsettings.Development.json" DestinationFolder="wwwroot" />

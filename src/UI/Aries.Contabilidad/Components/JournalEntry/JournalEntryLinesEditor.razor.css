@@ -1,0 +1,64 @@
+.scrollable-table {
+    max-height: 400px;
+    overflow-y: auto;
+    border-radius: var(--mud-default-borderradius);
+}
+
+/* Keep toolbar outside scroll area */
+::deep .mud-table-toolbar {
+    position: sticky;
+    top: 0;
+    background-color: var(--mud-palette-surface);
+    z-index: 2;
+    padding-bottom: 8px;
+    margin: -8px -8px 8px -8px;
+    padding: 8px;
+}
+
+/* Ensure the header stays fixed while scrolling */
+::deep .mud-table-head {
+    position: sticky;
+    top: 64px; /* Height of toolbar */
+    background-color: var(--mud-palette-surface);
+    z-index: 1;
+}
+
+/* Add shadow to header when scrolling */
+::deep .mud-table-head::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 2px;
+    background: linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0) 100%);
+}
+
+/* Ensure proper spacing in table cells */
+::deep .mud-table-cell {
+    padding: 8px 16px;
+    transition: background-color 0.2s ease;
+}
+
+/* Style for cells in edit mode */
+::deep .mud-table-row:has(.editing) .mud-table-cell {
+    background-color: var(--mud-palette-action-default-hover);
+}
+
+/* Remove bottom border from last row when not scrolling */
+::deep .mud-table-row:last-child .mud-table-cell {
+    border-bottom: none;
+}
+
+/* Action buttons container */
+::deep .action-buttons {
+    display: flex;
+    gap: 4px;
+    justify-content: flex-end;
+}
+
+/* Highlight row on hover */
+::deep .mud-table-row:hover .mud-table-cell {
+    background-color: var(--mud-palette-action-default-hover);
+}
+

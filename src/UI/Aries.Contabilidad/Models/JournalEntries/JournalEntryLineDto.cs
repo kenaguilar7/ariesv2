@@ -3,9 +3,8 @@ using Aries.Contabilidad.Models.Utils;
 
 namespace Aries.Contabilidad.Models.JournalEntries
 {
-    public class JournalEntryLineDto
+    public class JournalEntryLineDto : BaseModel
     {
-        public int Id { get; set; }
         public int AccountId { get; set; }
         public string AccountName { get; set; }
         public string AccountPath { get; set; }

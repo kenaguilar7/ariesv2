@@ -1,0 +1,130 @@
+@using Aries.Contabilidad.Models.JournalEntries
+@using Aries.Contabilidad.Models.Utils
+
+<MudPaper Class="pa-4">
+    <div class="@(Lines.Count > 5 ? "scrollable-table" : "")">
+        <MudTable Items="@Lines" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm" Class="mt-0" FixedHeader="@(Lines.Count > 5)">
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">Journal Entry Lines</MudText>
+            <MudSpacer />
+            <MudButton Color="Color.Primary" 
+                      OnClick="AddNewLine" 
+                      StartIcon="@Icons.Material.Filled.Add">
+                Add Line
+            </MudButton>
+        </ToolBarContent>
+@*         <HeaderContent>
+            <MudTh>Account</MudTh>
+            <MudTh>Description</MudTh>
+            <MudTh>Debit</MudTh>
+            <MudTh>Credit</MudTh>
+            <MudTh></MudTh>
+        </HeaderContent> *@
+        <RowTemplate>
+            <MudTd DataLabel="Account">
+                @if (_editingLine == context)
+                {
+                    <JournalEntryLineEditor 
+                        Line="@context"
+                        OnChange="@(() => FinishEditing(context))"
+                        OnDelete="@(() => HandleLineDeleted(context))" 
+                        CompanyId="@CompanyId"/>
+                }
+                else
+                {
+                    @context.AccountName
+                }
+            </MudTd>
+            <MudTd DataLabel="Description">@context.Memo</MudTd>
+            <MudTd DataLabel="Debit">
+                @(context.DebOrCred == DebOrCred.Debito ? context.Amount.ToString("N2") : "")
+            </MudTd>
+            <MudTd DataLabel="Credit">
+                @(context.DebOrCred == DebOrCred.Credito ? context.Amount.ToString("N2") : "")
+            </MudTd>
+            <MudTd>
+                <MudIconButton Icon="@Icons.Material.Filled.Edit" 
+                             Color="Color.Info"
+                             Size="Size.Small"
+                             Class="ma-1"
+                             OnClick="@(() => StartEditing(context))" />
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" 
+                             Color="Color.Error"
+                             Size="Size.Small"
+                             Class="ma-1"
+                             OnClick="@(() => HandleLineDeleted(context))" />
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+    </div>
+</MudPaper>
+
+@code {
+    private JournalEntryLineDto? _editingLine;
+    private bool _isAddingNew;
+
+    /// <summary>
+    /// List of journal entry lines
+    /// </summary>
+    [Parameter]
+    public List<JournalEntryLineDto> Lines { get; set; } = new();
+
+    [Parameter]
+    public string CompanyId { get; set; }
+
+    /// <summary>
+    /// Event callback when a line is changed
+    /// </summary>
+    [Parameter]
+    public EventCallback<JournalEntryLineDto> OnLineChanged { get; set; }
+
+    /// <summary>
+    /// Event callback when a line is deleted
+    /// </summary>
+    [Parameter]
+    public EventCallback<JournalEntryLineDto> OnLineDeleted { get; set; }
+
+    private void AddNewLine()
+    {
+        var newLine = new JournalEntryLineDto
+        {
+            Date = DateTime.Now,
+            RateAmount = 1,
+            DebOrCred = DebOrCred.Debito // Default to debit
+        };
+        Lines.Add(newLine);
+        _editingLine = newLine;
+        _isAddingNew = true;
+        HandleLineChanged(newLine);
+    }
+
+    private void StartEditing(JournalEntryLineDto line)
+    {
+        _editingLine = line;
+        _isAddingNew = false;
+        StateHasChanged();
+    }
+
+    private async Task FinishEditing(JournalEntryLineDto line)
+    {
+        _editingLine = null;
+        _isAddingNew = false;
+        await OnLineChanged.InvokeAsync(line);
+        StateHasChanged();
+    }
+
+    private async Task HandleLineChanged(JournalEntryLineDto line)
+    {
+        await OnLineChanged.InvokeAsync(line);
+    }
+
+    private async Task HandleLineDeleted(JournalEntryLineDto line)
+    {
+        if (_editingLine == line)
+        {
+            _editingLine = null;
+            _isAddingNew = false;
+        }
+        await OnLineDeleted.InvokeAsync(line);
+    }
+}

@@ -58,7 +58,7 @@ aries.contabilidad.2.0/
 ### 1. SSH Connection
 ```bash
 # Replace YOUR_INSTANCE_IP with your AWS Lightsail instance IP
-ssh -i "C:\aries-dev-server.pem" ubuntu@54.80.155.87
+ssh -i "C:\aries-dev-server.pem" ubuntu@54.144.10.65
 ```
 
 ### 2. Install Docker

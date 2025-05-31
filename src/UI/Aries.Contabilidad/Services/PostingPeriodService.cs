@@ -3,21 +3,19 @@ using Aries.Contabilidad.Models.PostingPeriods;
 
 namespace Aries.Contabilidad.Services
 {
-    public class PostingPeriodService : IPostingPeriodService
+    public class PostingPeriodService : BaseHttpService, IPostingPeriodService
     {
-        private readonly HttpClient _httpClient;
-
-        public PostingPeriodService(HttpClient httpClient)
+        public PostingPeriodService(IHttpClientFactory httpClientFactory, ILogger<PostingPeriodService> logger)
+            : base(httpClientFactory, logger)
         {
-            _httpClient = httpClient;
         }
 
-        public async Task<List<PostingPeriod>> GetPostingPeriodsAsync()
+        public async Task<List<PostingPeriodDto>> GetPostingPeriodsAsync(string companyId)
         {
             try
             {
-                var response = await _httpClient.GetFromJsonAsync<List<PostingPeriod>>("PostingPeriod/GetPostingPeriods");
-                return response ?? new List<PostingPeriod>();
+                var response = await _httpClient.GetFromJsonAsync<List<PostingPeriodDto>>($"PostingPeriod/GetPostingPeriods/{companyId}");
+                return response ?? new List<PostingPeriodDto>();
             }
             catch (Exception)
             {

@@ -4,6 +4,6 @@ namespace Aries.Contabilidad.Services
 {
     public interface IPostingPeriodService
     {
-        Task<List<PostingPeriod>> GetPostingPeriodsAsync();
+        Task<List<PostingPeriodDto>> GetPostingPeriodsAsync(string companyId);
     }
 } 

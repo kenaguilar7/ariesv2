@@ -1,0 +1,116 @@
+@using Aries.Contabilidad.Models.Accounts
+@using Aries.Contabilidad.Models.JournalEntries
+@using Aries.Contabilidad.Models.Utils
+
+<div class="d-flex gap-4">
+    <MudSelect T="string" 
+              @bind-Value="Line.AccountPath"
+              Label="Account"
+              Variant="Variant.Outlined"
+              Dense="true"
+              Class="flex-grow-1">
+        @if (Accounts != null)
+        {
+            @foreach (var account in Accounts)
+            {
+                <MudSelectItem Value="@account.PathDirection">@account.Name</MudSelectItem>
+            }
+        }
+    </MudSelect>
+
+    <MudTextField @bind-Value="Line.Memo"
+                 Label="Memo"
+                 Variant="Variant.Outlined"
+                 Dense="true"
+                 Class="flex-grow-1" />
+
+    <MudNumericField @bind-Value="DebitAmount"
+                    Label="Debit"
+                    Variant="Variant.Outlined"
+                    Dense="true"
+                    Format="N2"
+                    Min="0"
+                    Class="flex-grow-1" />
+
+    <MudNumericField @bind-Value="CreditAmount"
+                    Label="Credit"
+                    Variant="Variant.Outlined"
+                    Dense="true"
+                    Format="N2"
+                    Min="0"
+                    Class="flex-grow-1" />
+</div>
+
+@code {
+    /// <summary>
+    /// The journal entry line being edited
+    /// </summary>
+    [Parameter]
+    public JournalEntryLineDto Line { get; set; } = default!;
+
+    [Parameter]
+    public string CompanyId { get; set; }
+    /// <summary>
+    /// Event callback when the line is changed
+    /// </summary>
+    [Parameter]
+    public EventCallback OnChange { get; set; }
+
+    /// <summary>
+    /// Event callback when the line is deleted
+    /// </summary>
+    [Parameter]
+    public EventCallback OnDelete { get; set; }
+
+    [Inject]
+    private IAccountService AccountService { get; set; } = default!;
+
+    private List<Account> Accounts { get; set; } = new();
+
+    private decimal DebitAmount
+    {
+        get => Line.DebOrCred == DebOrCred.Debito ? Line.Amount : 0;
+        set
+        {
+            if (value > 0)
+            {
+                Line.Amount = value;
+                Line.DebOrCred = DebOrCred.Debito;
+                CreditAmount = 0;
+                NotifyChange();
+            }
+        }
+    }
+
+    private decimal CreditAmount
+    {
+        get => Line.DebOrCred == DebOrCred.Credito ? Line.Amount : 0;
+        set
+        {
+            if (value > 0)
+            {
+                Line.Amount = value;
+                Line.DebOrCred = DebOrCred.Credito;
+                DebitAmount = 0;
+                NotifyChange();
+            }
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Accounts = await AccountService.GetAccountsAsync(CompanyId);
+        }
+        catch (Exception)
+        {
+            // Handle error appropriately
+        }
+    }
+
+    private async Task NotifyChange()
+    {
+        await OnChange.InvokeAsync();
+    }
+}

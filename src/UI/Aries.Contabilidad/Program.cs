@@ -31,6 +31,8 @@ builder.Services.AddScoped<IClientCompanyService, ClientCompanyService>();
 builder.Services.AddScoped<IJournalEntryService, JournalEntryService>();
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IPostingPeriodService, PostingPeriodService>();
+builder.Services.AddScoped<IJournalEntryLineService, JournalEntryLineService>();
+builder.Services.AddScoped<ILocalStorageService, LocalStorageService>();
 
 // Configure HttpClient with environment-specific settings
 var apiBaseUrl = apiSettings?.BaseUrl ?? "http://localhost:5000";

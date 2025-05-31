@@ -4,6 +4,7 @@
 @inject IClientCompanyService CompanyService
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
+@inject ILocalStorageService LocalStorage
 
 <div class="container-fluid">
     <h3 class="mb-4">Compañías</h3>
@@ -38,15 +39,15 @@
                         <tbody>
                             @foreach (var company in companies)
                             {
-                                <tr>
+                                <tr style="cursor: pointer" @onclick="() => NavigateToDashboard(company.Code)">
                                     <td>@company.Code</td>
                                     <td>@company.CompanyName</td>
                                     <td>@company.NumberId</td>
                                     <td>
-                                        <a href="/companies/edit/@company.Id" class="btn btn-sm btn-primary me-2">
+                                        <a href="/companies/edit/@company.Id" class="btn btn-sm btn-primary me-2" @onclick:stopPropagation>
                                             <i class="fas fa-edit"></i> Editar
                                         </a>
-                                        <button class="btn btn-sm btn-danger" @onclick="() => DeleteCompany(company.Id)">
+                                        <button class="btn btn-sm btn-danger" @onclick:stopPropagation @onclick="() => DeleteCompany(company.Id)">
                                             <i class="fas fa-trash"></i> Eliminar
                                         </button>
                                     </td>
@@ -75,5 +76,15 @@
             await CompanyService.DeleteCompanyAsync(id);
             companies = await CompanyService.GetAllCompaniesAsync();
         }
+    }
+
+    private async Task NavigateToDashboard(string companyId)
+    {
+        var selectedCompany = companies.First(comp => comp.Code == companyId); 
+        if (selectedCompany != null)
+        {
+            await LocalStorage.StoreCompanyInLocalStorage(selectedCompany);
+        }
+        NavigationManager.NavigateTo($"/dashboard/{companyId}");
     }
 } 

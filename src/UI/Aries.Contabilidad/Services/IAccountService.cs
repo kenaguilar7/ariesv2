@@ -4,6 +4,7 @@ namespace Aries.Contabilidad.Services
 {
     public interface IAccountService
     {
-        Task<List<Account>> GetAccountsAsync();
+        Task<List<Account>> GetAccountsAsync(string companyId);
+        Task<Account> FindAccountAsync(int accountId);
     }
 } 

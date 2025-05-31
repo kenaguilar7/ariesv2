@@ -1,0 +1,66 @@
+@page "/dashboard/{CompanyId}"
+@using Aries.Contabilidad.Models.DTOs
+@using Aries.Contabilidad.Services
+@inject IClientCompanyService CompanyService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+@inject ILocalStorageService LocalStorage
+
+<div class="container-fluid">
+    @if (isLoading)
+    {
+        <div class="d-flex justify-content-center">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+        </div>
+    }
+    else
+    {
+
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card h-100 cursor-pointer" @onclick="NavigateToJournalEntry">
+                    <div class="card-body text-center">
+                        <i class="fas fa-book fa-3x mb-3"></i>
+                        <h3 class="card-title">Asientos Contables</h3>
+                        <p class="card-text">Gestione sus asientos contables de manera eficiente</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public string CompanyId { get; set; }
+
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = false; 
+        Console.WriteLine(CompanyId);
+        // try
+        // {
+        //     company = await CompanyService.GetCompanyByIdAsync(CompanyId);
+        //     if (company != null)
+        //     {
+        //         await LocalStorage.StoreCompanyInLocalStorage(company);
+        //     }
+        //     isLoading = false;
+        // }
+        // catch (Exception ex)
+        // {
+        //     // TODO: Add proper error handling
+        //     Console.WriteLine($"Error loading company: {ex}");
+        //     isLoading = false;
+        // }
+    }
+
+    private void NavigateToJournalEntry()
+    {
+        NavigationManager.NavigateTo($"/journal-entries/{CompanyId}");
+    }
+} 

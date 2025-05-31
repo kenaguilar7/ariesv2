@@ -7,23 +7,16 @@ using Microsoft.JSInterop;
 
 namespace Aries.Contabilidad.Services
 {
-    public class AuthService : IAuthService
+    public class AuthService : BaseHttpService, IAuthService
     {
-        private readonly HttpClient _httpClient;
         private readonly IJSRuntime _jsRuntime;
-        private readonly JsonSerializerOptions _jsonOptions;
         private const string TOKEN_KEY = "auth_token";
         private const string USER_KEY = "user_data";
 
         public AuthService(IHttpClientFactory httpClientFactory, IJSRuntime jsRuntime)
+            : base(httpClientFactory)
         {
-            _httpClient = httpClientFactory.CreateClient("AriesAPI");
             _jsRuntime = jsRuntime;
-            _jsonOptions = new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true,
-                Converters = { new JsonStringEnumConverter() }
-            };
         }
 
         public async Task<AuthResponse?> LoginAsync(LoginRequest loginModel)

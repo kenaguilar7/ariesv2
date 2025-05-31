@@ -15,22 +15,13 @@ namespace Aries.Contabilidad.Services
     /// Client-side service that acts as a facade for company operations.
     /// This service will be replaced with API calls in the future.
     /// </summary>
-    public class ClientCompanyService : IClientCompanyService
+    public class ClientCompanyService : BaseHttpService, IClientCompanyService
     {
-        private readonly HttpClient _httpClient;
         private const string ApiEndpoint = "Company";
-        private readonly JsonSerializerOptions _jsonOptions;
-        private readonly ILogger<ClientCompanyService> _logger;
 
         public ClientCompanyService(IHttpClientFactory httpClientFactory, ILogger<ClientCompanyService> logger)
+            : base(httpClientFactory, logger)
         {
-            _httpClient = httpClientFactory.CreateClient("AriesAPI");
-            _logger = logger;
-            _jsonOptions = new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true,
-                Converters = { new JsonStringEnumConverter() }
-            };
         }
 
         public async Task<IEnumerable<CompanyDto>> GetAllCompaniesAsync()

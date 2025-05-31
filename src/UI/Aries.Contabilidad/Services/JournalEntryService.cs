@@ -1,25 +1,24 @@
 using System.Net.Http.Json;
 using Aries.Contabilidad.Models.JournalEntries;
+using Microsoft.Extensions.Logging;
 
 namespace Aries.Contabilidad.Services
 {
-    public class JournalEntryService : IJournalEntryService
+    public class JournalEntryService : BaseHttpService, IJournalEntryService
     {
-        private readonly HttpClient _httpClient;
-
-        public JournalEntryService(HttpClient httpClient)
+        public JournalEntryService(IHttpClientFactory httpClientFactory, ILogger<JournalEntryService> logger)
+            : base(httpClientFactory, logger)
         {
-            _httpClient = httpClient;
         }
 
-        public async Task<List<JournalEntryDto>> GetJournalEntriesAsync(int postingPeriodId)
+        public async Task<List<JournalEntryDto>> GetJournalEntriesAsync(int postingPeriodId, JournalEntryFilter journalEntryFilter)
         {
             try
             {
                 var response = await _httpClient.GetFromJsonAsync<List<JournalEntryDto>>($"JournalEntry/GetJournalEntries/{postingPeriodId}");
                 return response ?? new List<JournalEntryDto>();
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 throw;
             }
@@ -70,59 +69,6 @@ namespace Aries.Contabilidad.Services
             {
                 var response = await _httpClient.PostAsJsonAsync("JournalEntry/DeleteJournalEntry", journalEntry);
                 response.EnsureSuccessStatusCode();
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
-
-        public async Task<int> CreateJournalEntryLineAsync(JournalEntryLineDto line)
-        {
-            try
-            {
-                var response = await _httpClient.PostAsJsonAsync("JournalEntryLine/CreateJournalEntryLine", line);
-                response.EnsureSuccessStatusCode();
-                return await response.Content.ReadFromJsonAsync<int>();
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
-
-        public async Task UpdateJournalEntryLineAsync(JournalEntryLineDto line)
-        {
-            try
-            {
-                var response = await _httpClient.PostAsJsonAsync("JournalEntryLine/UpdateJournalEntryLine", line);
-                response.EnsureSuccessStatusCode();
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
-
-        public async Task DeleteJournalEntryLineAsync(JournalEntryLineDto line)
-        {
-            try
-            {
-                var response = await _httpClient.PostAsJsonAsync("JournalEntryLine/DeleteJournalEntryLine", line);
-                response.EnsureSuccessStatusCode();
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
-
-        public async Task<List<JournalEntryLineDto>> GetJournalEntryLinesAsync(int journalEntryId)
-        {
-            try
-            {
-                var response = await _httpClient.GetFromJsonAsync<List<JournalEntryLineDto>>($"JournalEntryLine/FindJournalEntryLine/{journalEntryId}");
-                return response ?? new List<JournalEntryLineDto>();
             }
             catch (Exception)
             {
