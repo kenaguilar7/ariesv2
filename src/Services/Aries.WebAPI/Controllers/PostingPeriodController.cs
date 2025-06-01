@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Aries.WebAPI.Controllers
 {
-    [Authorize]
     [ApiController]
     [Route("[controller]")]
     public class PostingPeriodController : AriesBaseController

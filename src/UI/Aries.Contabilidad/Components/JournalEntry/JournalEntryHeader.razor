@@ -5,9 +5,10 @@
     <MudItem xs="12" sm="6">
         <MudSelect T="int"
                    Value="PostingPeriodId"
-                   ValueChanged="@(async (int val) => { await PostingPeriodIdChanged.InvokeAsync(val); await OnPostingPeriodChanged.InvokeAsync(val); })"
+                   ValueChanged="@(async (int val) => await PostingPeriodIdChanged.InvokeAsync(val))"
                    Label="Posting Period"
-                   Variant="Variant.Outlined">
+                   Variant="Variant.Outlined"
+                   Immediate="true">
             @if (PostingPeriods != null)
             {
                 @foreach (var period in PostingPeriods)
@@ -18,16 +19,17 @@
         </MudSelect>
     </MudItem>
     <MudItem xs="12" sm="6">
-        <MudSelect T="int"
-                   Value="JournalEntryId"
-                   ValueChanged="JournalEntryIdChanged"
+        <MudSelect T="JournalEntryDto"
+                   Value="JournalEntry"
+                   ValueChanged="@(async (JournalEntryDto val) => await JournalEntryIdChanged.InvokeAsync(val))"
                    Label="Journal Entry Number"
-                   Variant="Variant.Outlined">
+                   Variant="Variant.Outlined"
+                   Immediate="true">
             @if (JournalEntries != null)
             {
                 @foreach (var entry in JournalEntries)
                 {
-                    <MudSelectItem Value="@entry.Id">@entry.Number</MudSelectItem>
+                    <MudSelectItem Value="@entry">@entry.Number</MudSelectItem>
                 }
             }
         </MudSelect>
@@ -37,45 +39,25 @@
 
 @code {
 
-    /// <summary>
-    /// The journal entry number
-    /// </summary>
-    [Parameter]
-    public int JournalEntryId { get; set; }
+    // [Parameter]
+    // public int JournalEntryId { get; set; }
 
-    /// <summary>
-    /// Event callback for number changes
-    /// </summary>
     [Parameter]
-    public EventCallback<int> JournalEntryIdChanged { get; set; }
+    public JournalEntryDto JournalEntry { get; set; } = new();
 
-    /// <summary>
-    /// The selected posting period ID
-    /// </summary>
     [Parameter]
     public int PostingPeriodId { get; set; }
 
-    /// <summary>
-    /// Event callback for posting period changes
-    /// </summary>
+    [Parameter]
+    public EventCallback<JournalEntryDto> JournalEntryIdChanged { get; set; }
+
     [Parameter]
     public EventCallback<int> PostingPeriodIdChanged { get; set; }
 
-    /// <summary>
-    /// List of available posting periods
-    /// </summary>
     [Parameter]
     public List<PostingPeriodDto> PostingPeriods { get; set; } = new();
 
-    /// <summary>
-    /// Event callback when posting period is changed
-    /// </summary>
-    [Parameter]
-    public EventCallback<int> OnPostingPeriodChanged { get; set; }
-
-    /// <summary>
-    /// List of available journal entries
-    /// </summary>
     [Parameter]
     public List<JournalEntryDto> JournalEntries { get; set; } = new();
+
 }

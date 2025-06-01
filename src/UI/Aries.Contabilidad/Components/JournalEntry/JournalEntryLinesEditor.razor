@@ -1,65 +1,83 @@
+@using Aries.Contabilidad.Models.Enums
 @using Aries.Contabilidad.Models.JournalEntries
 @using Aries.Contabilidad.Models.Utils
 
 <MudPaper Class="pa-4">
-    <div class="@(Lines.Count > 5 ? "scrollable-table" : "")">
-        <MudTable Items="@Lines" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm" Class="mt-0" FixedHeader="@(Lines.Count > 5)">
-        <ToolBarContent>
-            <MudText Typo="Typo.h6">Journal Entry Lines</MudText>
-            <MudSpacer />
-            <MudButton Color="Color.Primary" 
-                      OnClick="AddNewLine" 
-                      StartIcon="@Icons.Material.Filled.Add">
-                Add Line
-            </MudButton>
-        </ToolBarContent>
-@*         <HeaderContent>
-            <MudTh>Account</MudTh>
-            <MudTh>Description</MudTh>
-            <MudTh>Debit</MudTh>
-            <MudTh>Credit</MudTh>
-            <MudTh></MudTh>
-        </HeaderContent> *@
-        <RowTemplate>
-            <MudTd DataLabel="Account">
+        <MudTable Items="@Lines" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm" Class="mt-0" FixedHeader="true" 
+        Height="@("400px")">
+            <ToolBarContent>
+                <MudButton Color="Color.Primary"
+                           OnClick="AddNewLine"
+                           StartIcon="@Icons.Material.Filled.Add">
+                    Add Line
+                </MudButton>
+            </ToolBarContent>
+            <HeaderContent>
+                <MudTh>Account</MudTh>
+                <MudTh>Description</MudTh>
+                <MudTh>Currency</MudTh>
+                <MudTh>Rate</MudTh>
+                <MudTh Style="text-align: right">Foreign Debit</MudTh>
+                <MudTh Style="text-align: right">Foreign Credit</MudTh>
+                <MudTh Style="text-align: right">Debit</MudTh>
+                <MudTh Style="text-align: right">Credit</MudTh>
+                <MudTh></MudTh>
+            </HeaderContent>
+            <RowTemplate>
+
                 @if (_editingLine == context)
                 {
-                    <JournalEntryLineEditor 
-                        Line="@context"
-                        OnChange="@(() => FinishEditing(context))"
-                        OnDelete="@(() => HandleLineDeleted(context))" 
-                        CompanyId="@CompanyId"/>
+                    <JournalEntryLineEditor Line="@context"
+                                            OnChange="@(() => FinishEditing(context))"
+                                            OnCancelAction="@(() => HandleCancelAction(context))"
+                                            CompanyId="@CompanyId" />
                 }
                 else
                 {
-                    @context.AccountName
+                    <MudTd DataLabel="Account">@context.AccountName</MudTd>
+                    <MudTd DataLabel="Description">@context.Memo</MudTd>
+                    <MudTd DataLabel="Currency">@(context.Currency == Currency.dolares ? "USD" : "CRC")</MudTd>
+                    <MudTd DataLabel="Rate">@context.RateAmount.ToString("N4")</MudTd>
+                    @* TODO Validate with the company if the company allow fereign transactions*@
+                    <MudTd DataLabel="Foreign Debit" Style="text-align: right">
+                        @(context.DebOrCred == DebOrCred.Debito ? context.ForeignAmount.ToString("N2") : "")
+                    </MudTd>
+                    <MudTd DataLabel="Foreign Credit" Style="text-align: right">
+                        @(context.DebOrCred == DebOrCred.Credito ? context.ForeignAmount.ToString("N2") : "")
+                    </MudTd>
+                    <MudTd DataLabel="Debit" Style="text-align: right">
+                        @(context.DebOrCred == DebOrCred.Debito ? context.Amount.ToString("N2") : "")
+                    </MudTd>
+                    <MudTd DataLabel="Credit" Style="text-align: right">
+                        @(context.DebOrCred == DebOrCred.Credito ? context.Amount.ToString("N2") : "")
+                    </MudTd>
+
                 }
-            </MudTd>
-            <MudTd DataLabel="Description">@context.Memo</MudTd>
-            <MudTd DataLabel="Debit">
-                @(context.DebOrCred == DebOrCred.Debito ? context.Amount.ToString("N2") : "")
-            </MudTd>
-            <MudTd DataLabel="Credit">
-                @(context.DebOrCred == DebOrCred.Credito ? context.Amount.ToString("N2") : "")
-            </MudTd>
-            <MudTd>
-                <MudIconButton Icon="@Icons.Material.Filled.Edit" 
-                             Color="Color.Info"
-                             Size="Size.Small"
-                             Class="ma-1"
-                             OnClick="@(() => StartEditing(context))" />
-                <MudIconButton Icon="@Icons.Material.Filled.Delete" 
-                             Color="Color.Error"
-                             Size="Size.Small"
-                             Class="ma-1"
-                             OnClick="@(() => HandleLineDeleted(context))" />
-            </MudTd>
-        </RowTemplate>
-    </MudTable>
-    </div>
+
+                @if (_editingLine != context){
+                <MudTd>
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                   Color="Color.Info"
+                                   Size="Size.Small"
+                                   Class="ma-1"
+                                   OnClick="@(() => StartEditing(context))" />
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                   Color="Color.Error"
+                                   Size="Size.Small"
+                                   Class="ma-1"
+                                   OnClick="@(() => HandleLineDeleted(context))" />
+                </MudTd>
+                }
+
+            </RowTemplate>
+    @*          <PagerContent>
+                <MudTablePager PageSizeOptions="new int[]{5,25,50, 100}" />
+            </PagerContent> *@
+        </MudTable>
 </MudPaper>
 
 @code {
+
     private JournalEntryLineDto? _editingLine;
     private bool _isAddingNew;
 
@@ -84,18 +102,21 @@
     [Parameter]
     public EventCallback<JournalEntryLineDto> OnLineDeleted { get; set; }
 
-    private void AddNewLine()
+    private async void AddNewLine()
     {
+        if(_isAddingNew) return; 
+
         var newLine = new JournalEntryLineDto
-        {
-            Date = DateTime.Now,
-            RateAmount = 1,
-            DebOrCred = DebOrCred.Debito // Default to debit
-        };
+            {
+                Date = DateTime.Now,
+                RateAmount = 1,
+                DebOrCred = DebOrCred.Debito, // Default to debit
+                Currency = Currency.dolares, // Default to local currency
+            };
         Lines.Add(newLine);
         _editingLine = newLine;
         _isAddingNew = true;
-        HandleLineChanged(newLine);
+        // await HandleLineChanged(newLine);
     }
 
     private void StartEditing(JournalEntryLineDto line)
@@ -109,6 +130,7 @@
     {
         _editingLine = null;
         _isAddingNew = false;
+
         await OnLineChanged.InvokeAsync(line);
         StateHasChanged();
     }
@@ -116,6 +138,12 @@
     private async Task HandleLineChanged(JournalEntryLineDto line)
     {
         await OnLineChanged.InvokeAsync(line);
+    }
+    
+    private async Task HandleCancelAction(JournalEntryLineDto line)
+    {
+        _editingLine = null;
+         _isAddingNew = false;
     }
 
     private async Task HandleLineDeleted(JournalEntryLineDto line)
@@ -127,4 +155,6 @@
         }
         await OnLineDeleted.InvokeAsync(line);
     }
+
+
 }

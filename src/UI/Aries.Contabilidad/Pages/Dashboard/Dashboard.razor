@@ -1,7 +1,10 @@
 @page "/dashboard/{CompanyId}"
 @using Aries.Contabilidad.Models.DTOs
 @using Aries.Contabilidad.Services
+@using Aries.Contabilidad.Models.Accounts
+@using Aries.Contabilidad.Components.Accounts
 @inject IClientCompanyService CompanyService
+@inject IAccountService AccountService
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
 @inject ILocalStorageService LocalStorage
@@ -28,6 +31,24 @@
                     </div>
                 </div>
             </div>
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <i class="fas fa-sitemap fa-2x me-2"></i>
+                            <h3 class="card-title mb-0">Catálogo de Cuentas</h3>
+                        </div>
+                        @if (accounts != null)
+                        {
+                            <AccountTreeView Accounts="@accounts" />
+                        }
+                        else
+                        {
+                            <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+                        }
+                    </div>
+                </div>
+            </div>
         </div>
     }
 </div>
@@ -37,10 +58,20 @@
     public string CompanyId { get; set; }
 
     private bool isLoading = true;
+    private List<Account> accounts;
 
     protected override async Task OnInitializedAsync()
     {
-        isLoading = false; 
+        try
+        {
+            accounts = await AccountService.GetAccountsAsync(CompanyId);
+            isLoading = false;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading accounts: {ex}");
+            isLoading = false;
+        }
         Console.WriteLine(CompanyId);
         // try
         // {
@@ -61,6 +92,6 @@
 
     private void NavigateToJournalEntry()
     {
-        NavigationManager.NavigateTo($"/journal-entries/{CompanyId}");
+        NavigationManager.NavigateTo($"/journal-entries/{CompanyId}/create");
     }
 } 

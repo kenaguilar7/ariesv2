@@ -10,13 +10,15 @@ namespace Aries.Contabilidad.Services
     public class AuthService : BaseHttpService, IAuthService
     {
         private readonly IJSRuntime _jsRuntime;
+        private readonly ILocalStorageService _localStorageService;
         private const string TOKEN_KEY = "auth_token";
         private const string USER_KEY = "user_data";
 
-        public AuthService(IHttpClientFactory httpClientFactory, IJSRuntime jsRuntime)
+        public AuthService(IHttpClientFactory httpClientFactory, IJSRuntime jsRuntime, ILocalStorageService localStorageService)
             : base(httpClientFactory)
         {
             _jsRuntime = jsRuntime;
+            _localStorageService = localStorageService;
         }
 
         public async Task<AuthResponse?> LoginAsync(LoginRequest loginModel)
@@ -31,8 +33,10 @@ namespace Aries.Contabilidad.Services
                     {
                         await _jsRuntime.InvokeVoidAsync("localStorage.setItem", TOKEN_KEY, result.Token);
                         await _jsRuntime.InvokeVoidAsync("localStorage.setItem", USER_KEY, JsonSerializer.Serialize(result.User));
-                        
+
                         // Set the authorization header for future requests
+
+                        await _localStorageService.StoreCurrentUser(result.User);
                         _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", result.Token);
                         
                         return result;

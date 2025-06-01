@@ -7,7 +7,7 @@ namespace Aries.WebAPI.Controllers
     /// <summary>
     /// Base controller for all Aries controllers providing common functionality and attributes.
     /// </summary>
-    //[Authorize]
+    [Authorize]
     [ApiController]
     [Route("[controller]")]
     public abstract class AriesBaseController : ControllerBase

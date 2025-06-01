@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Aries.WebAPI.Controllers
 {
-    [Authorize]
     [ApiController]
     [Route("[controller]")]
     public class JournalEntryLineController : AriesBaseController
@@ -42,8 +41,15 @@ namespace Aries.WebAPI.Controllers
         [HttpGet("FindJournalEntryLine/{journalEntryId}")]
         public async Task<IActionResult> FindJournalEntryLine(int journalEntryId)
         {
-            var result = await _journalEntryLineService.GetJournalEntryLineByJournalEntryId(journalEntryId);
-            return Ok(result);  
+            try
+            {
+                var result = await _journalEntryLineService.GetJournalEntryLineByJournalEntryId(journalEntryId);
+                return Ok(result);  
+            }
+            catch (Exception e)
+            {
+                return HandleException(e);
+            }
         }
 
         [HttpPost("UpdateJournalEntryLine")]

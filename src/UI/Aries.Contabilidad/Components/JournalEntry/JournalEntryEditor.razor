@@ -2,8 +2,9 @@
 @using Aries.Contabilidad.Models.PostingPeriods
 @using Aries.Contabilidad.Models.Utils
 @using Microsoft.AspNetCore.Components.Forms
+@using System.Text.Json
 
-<EditForm Model="@JournalEntry" OnValidSubmit="HandleValidSubmit">
+<EditForm Model="@JournalEntry">
     <DataAnnotationsValidator />
     <ValidationSummary />
 
@@ -11,11 +12,11 @@
         <MudText Typo="Typo.h4" Class="mb-4">@Title</MudText>
 
         <JournalEntryHeader 
-        JournalEntryId="JournalEntry.Number"
+        JournalEntry="JournalEntry"
+        PostingPeriodId="JournalEntry.PostingPeriodId"
         JournalEntryIdChanged="HandleJournalEntryIdChanged"
-        @bind-PostingPeriodId="JournalEntry.PostingPeriodId"
+        PostingPeriodIdChanged="HandlePostingPeriodChanged"
         PostingPeriods="@_postingPeriods"
-        OnPostingPeriodChanged="HandlePostingPeriodChanged"
         JournalEntries="@_journalEntries" />
 
         <JournalEntryLinesEditor 
@@ -29,27 +30,14 @@
         TotalCredit="@_totalCredit"
         IsBalanced="@IsBalanced" />
 
-        <MudPaper Class="d-flex justify-end pa-4 mt-4 gap-4">
+@*         <MudPaper Class="d-flex justify-end pa-4 mt-4 gap-4">
             <MudButton Variant="Variant.Filled" Color="Color.Default" OnClick="OnCancel">Cancel</MudButton>
             <MudButton Variant="Variant.Filled" Color="Color.Primary" Type="submit" Disabled="@(!IsBalanced)">Save</MudButton>
-        </MudPaper>
+        </MudPaper> *@
     </MudContainer>
 </EditForm>
 
 @code {
-
-
-
-
-
-
-
-    /// <summary>
-    /// The journal entry model being edited
-    /// </summary>
-    [Parameter]
-    public JournalEntryDto JournalEntry { get; set; } = default!;
-
     [Parameter]
     public string CompanyId { get; set; } 
 
@@ -71,6 +59,12 @@
     [Parameter]
     public EventCallback OnCancel { get; set; }
 
+    /// <summary>
+    /// The journal entry model being edited
+    /// </summary>
+    [Parameter]
+    public JournalEntryDto JournalEntry { get; set; } = default!;
+
     private List<PostingPeriodDto> _postingPeriods = new();
     private List<JournalEntryDto> _journalEntries = new();
     private decimal _totalDebit;
@@ -85,6 +79,9 @@
     [Inject]
     private IJournalEntryLineService JournalEntryLineService { get; set; } = default!;
 
+    [Inject]
+    private ILocalStorageService LocalStorageService { get; set; } = default!;
+
     /// <summary>
     /// Indicates whether debits and credits are balanced
     /// </summary>
@@ -98,19 +95,7 @@
             var lastPostingPeriod = _postingPeriods.OrderByDescending(p => p.Date).FirstOrDefault();
             if (lastPostingPeriod != null)
             {
-                var newJournalEntryId = await JournalEntryService.GetConsecutiveNumberAsync(lastPostingPeriod.Id);
-                // _journalEntries = await JournalEntryService.GetJournalEntriesAsync(CompanyId, new JournalEntryFilter());
-                JournalEntry = new JournalEntryDto
-                    {
-                    // CompanyId = CompanyId,
-                        CreatedAt = DateTime.Now,
-                        UpdatedAt = DateTime.Now,
-                        Status = JournalEntryStatus.Draft,
-                        PostingPeriodId = lastPostingPeriod?.Id ?? 0,
-                        Number = newJournalEntryId,
-                        IsPosted = false,
-                        Lines = new List<JournalEntryLineDto>()
-                    };
+                await HandlePostingPeriodChanged(lastPostingPeriod.Id);
             }
             CalculateTotals();
         }
@@ -128,6 +113,7 @@
         JournalEntry = new JournalEntryDto
             {
             // CompanyId = CompanyId,
+                Id = 0,
                 CreatedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now,
                 Status = JournalEntryStatus.Draft,
@@ -153,45 +139,71 @@
 
     private async Task HandlePostingPeriodChanged(int periodId)
     {
-        JournalEntry.PostingPeriodId = periodId;
         _journalEntries = await GetConsecutiveNumberAsync(periodId);
-        JournalEntry = _journalEntries.LastOrDefault(); 
-        StateHasChanged();
+        StateHasChanged(); 
     }
 
-    private async Task HandleJournalEntryIdChanged(int number)
+    private async Task HandleJournalEntryIdChanged(JournalEntryDto journalEntry)
     {
-        JournalEntry.Number = number;
-        if(number > 0)
+
+        JournalEntry = journalEntry;
+
+        if (journalEntry.Id == 0)
         {
-            var existingLines = await JournalEntryLineService.GetJournalEntryLinesAsync(number);
-            if (existingLines != null)
-            {
-                JournalEntry.Lines = existingLines;
-                CalculateTotals();
-            }
+            JournalEntry.Id = await JournalEntryService.CreateJournalEntryAsync(journalEntry);
         }
-        StateHasChanged();
-    }
+        else
+        {
+            var existingLines = await JournalEntryLineService.GetJournalEntryLinesAsync(journalEntry.Id);
+            if (existingLines != null)
+                journalEntry.Lines = existingLines;
+            else
+                journalEntry.Lines = new List<JournalEntryLineDto>();
 
-    private void HandleLineChanged(JournalEntryLineDto line)
-    {
+        }
         CalculateTotals();
         StateHasChanged();
     }
 
-    private void HandleLineDeleted(JournalEntryLineDto line)
+    private async void HandleLineChanged(JournalEntryLineDto line)
     {
+        if (JournalEntry.Id == 0)
+            JournalEntry.Id = await JournalEntryService.CreateJournalEntryAsync(JournalEntry);
+
+        line.JournalEntryId = JournalEntry.Id;
+        var user = await LocalStorageService.GetCurrentUserSesion();
+        line.CreatedBy = user.Id; 
+        line.UpdatedBy = user.Id;
+
+        if (line.Id == 0)
+        {
+            await JournalEntryLineService.CreateJournalEntryLineAsync(line);
+            JournalEntry.Lines.Add(line);
+        }
+        else
+        {
+            await JournalEntryLineService.UpdateJournalEntryLineAsync(line);
+        };
+
+        await JournalEntryService.UpdateJournalEntryAsync(JournalEntry);
+
+        CalculateTotals();
+        StateHasChanged();
+    }
+
+    private async void HandleLineDeleted(JournalEntryLineDto line)
+    {
+        await JournalEntryLineService.DeleteJournalEntryLineAsync(line);
         JournalEntry.Lines.Remove(line);
         CalculateTotals();
         StateHasChanged();
     }
 
-    private async Task HandleValidSubmit()
-    {
-        if (IsBalanced)
-        {
-            await OnSave.InvokeAsync(JournalEntry);
-        }
-    }
+    // private async Task HandleValidSubmit()
+    // {
+    //     if (IsBalanced)
+    //     {
+    //         await OnSave.InvokeAsync(JournalEntry);
+    //     }
+    // }
 }

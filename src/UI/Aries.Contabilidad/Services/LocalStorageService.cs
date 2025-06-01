@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Aries.Contabilidad.Models.Auth;
 using Aries.Contabilidad.Models.DTOs;
 using Microsoft.JSInterop;
 
@@ -11,12 +12,15 @@ namespace Aries.Contabilidad.Services
         Task<string?> GetItem(string key);
         Task SetItem(string key, string value);
         Task RemoveItem(string key);
+        Task StoreCurrentUser(UserInfo user);
+        Task<UserInfo> GetCurrentUserSesion(); 
     }
 
     public class LocalStorageService : ILocalStorageService
     {
         private readonly IJSRuntime _jsRuntime;
         private const string USER_DATA_KEY = "user_data";
+        private const string CURRENT_USER_DATA_KEY = "current_user_data";
 
         public LocalStorageService(IJSRuntime jsRuntime)
         {
@@ -78,6 +82,22 @@ namespace Aries.Contabilidad.Services
             }
         }
 
+        public async Task<UserInfo> GetCurrentUserSesion()
+        {
+            try
+            {
+                var userJson = await GetItem(CURRENT_USER_DATA_KEY);
+                if (string.IsNullOrEmpty(userJson))
+                    return new UserInfo();
+                return JsonSerializer.Deserialize<UserInfo>(userJson) ?? new UserInfo();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error retrieving user info from localStorage: {ex}");
+                return new UserInfo();
+            }
+        }
+
         public async Task<string?> GetItem(string key)
         {
             try
@@ -113,6 +133,19 @@ namespace Aries.Contabilidad.Services
             catch (Exception ex)
             {
                 Console.WriteLine($"Error removing item from localStorage: {ex}");
+                throw;
+            }
+        }
+
+        public async Task StoreCurrentUser(UserInfo user)
+        {
+            try
+            {
+                await SetItem(CURRENT_USER_DATA_KEY, JsonSerializer.Serialize(user));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error storing user data in localStorage: {ex}");
                 throw;
             }
         }

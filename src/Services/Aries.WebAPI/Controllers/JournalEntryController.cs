@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Aries.WebAPI.Controllers
 {
-    [Authorize]
     [ApiController]
     [Route("[controller]")]
     public class JournalEntryController : AriesBaseController

@@ -1,0 +1,62 @@
+@using Aries.Contabilidad.Models.Accounts
+@using Aries.Contabilidad.Models.Enums
+@using Aries.Contabilidad.Models.Utils
+
+<MudPaper Class="pa-4">
+    <MudTreeView T="Account" Items="@TreeViewItems" Hover="true" Dense="true" ExpandOnClick="true">
+        <ItemTemplate>
+            <MudTreeViewItem Items="@(GetChildTreeItems(context.Value))" Value="@context.Value" Expanded>
+                <Content>
+                      <div class="d-flex align-center gap-4">
+                        <MudText>@context.Value.Name</MudText>
+                    </div>
+                </Content>
+            </MudTreeViewItem>
+        </ItemTemplate>
+    </MudTreeView>
+</MudPaper>
+
+@code {
+    [Parameter]
+    public List<Account> Accounts { get; set; } = new();
+
+    private IReadOnlyCollection<TreeItemData<Account>> TreeViewItems =>
+        RootAccounts.Select(a => new TreeItemData<Account>
+            {
+                Value = a,
+                Text = a.Name,
+                Expanded = true // Opcional: expandir nodos por defecto
+            }).ToList().AsReadOnly();
+
+    private IEnumerable<Account> RootAccounts => Accounts.Where(a => !a.FatherAccount.HasValue);
+
+    private IReadOnlyCollection<TreeItemData<Account>> GetChildTreeItems(Account parent)
+    {
+        return Accounts
+            .Where(a => a.FatherAccount == parent.Id)
+            .Select(a => new TreeItemData<Account>
+                {
+                    Value = a,
+                    Text = a.Name,
+                    Expanded = false
+                })
+            .ToList()
+            .AsReadOnly();
+    }
+
+    private decimal GetAccountBalance(Account account)
+    {
+        var balance = account.PriorBalance;
+
+        if (account.DebOCred == DebOrCred.Debito)
+        {
+            balance += account.DebitBalance - account.CreditBalance;
+        }
+        else
+        {
+            balance += account.CreditBalance - account.DebitBalance;
+        }
+
+        return balance;
+    }
+}
