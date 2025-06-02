@@ -3,12 +3,13 @@
 @using Aries.Contabilidad.Models.Utils
 
 <MudPaper Class="pa-4">
-    <MudTreeView T="Account" Items="@TreeViewItems" Hover="true" Dense="true" ExpandOnClick="true">
+    <MudTreeView T="Account" Items="@TreeViewItems" Hover="true" Dense="true" ExpandOnClick="true" SelectedValue="selectedAccount" SelectedValueChanged="HandleSelectedValueChanged">
         <ItemTemplate>
-            <MudTreeViewItem Items="@(GetChildTreeItems(context.Value))" Value="@context.Value" Expanded>
+            <MudTreeViewItem Items="@(GetChildTreeItems(context.Value))" Value="@context.Value">
                 <Content>
-                      <div class="d-flex align-center gap-4">
+                    <div class="d-flex align-center gap-4 cursor-pointer">
                         <MudText>@context.Value.Name</MudText>
+                        <MudText>@context.Value.Id</MudText>
                     </div>
                 </Content>
             </MudTreeViewItem>
@@ -19,6 +20,11 @@
 @code {
     [Parameter]
     public List<Account> Accounts { get; set; } = new();
+
+    [Parameter]
+    public EventCallback<Account> OnAccountSelected { get; set; }
+
+    private Account selectedAccount;
 
     private IReadOnlyCollection<TreeItemData<Account>> TreeViewItems =>
         RootAccounts.Select(a => new TreeItemData<Account>
@@ -44,19 +50,11 @@
             .AsReadOnly();
     }
 
-    private decimal GetAccountBalance(Account account)
+    private async Task HandleSelectedValueChanged(Account account)
     {
-        var balance = account.PriorBalance;
-
-        if (account.DebOCred == DebOrCred.Debito)
+        if (account != null)
         {
-            balance += account.DebitBalance - account.CreditBalance;
+            await OnAccountSelected.InvokeAsync(account);
         }
-        else
-        {
-            balance += account.CreditBalance - account.DebitBalance;
-        }
-
-        return balance;
     }
 }

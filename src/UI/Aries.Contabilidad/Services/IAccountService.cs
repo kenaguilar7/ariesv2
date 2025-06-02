@@ -6,5 +6,6 @@ namespace Aries.Contabilidad.Services
     {
         Task<List<Account>> GetAccountsAsync(string companyId);
         Task<Account> FindAccountAsync(int accountId);
+        Task<Account> GetAccountBalanceAsync(string companyId, int accountId, DateTime startMonth, DateTime endMonth); 
     }
 } 

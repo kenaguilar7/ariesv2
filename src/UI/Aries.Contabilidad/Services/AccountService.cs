@@ -40,5 +40,21 @@ namespace Aries.Contabilidad.Services
                 throw;
             }
         }
+
+        public async Task<Account> GetAccountBalanceAsync(string companyId, int accountId, DateTime startMonth, DateTime endMonth)
+        {
+            try
+            {
+                var response = await _httpClient.GetFromJsonAsync<Account>(
+                    $"{ServiceName}/balance/{accountId}?companyId={companyId}&startMonth={startMonth:yyyy-MM-dd}&endMonth={endMonth:yyyy-MM-dd}",
+                    _jsonOptions);
+                return response ?? throw new Exception("Account balance not found");
+            }
+            catch (Exception e)
+            {
+                _logger?.LogError(e, "Error getting account balance for account {AccountId} in company {CompanyId}", accountId, companyId);
+                throw;
+            }
+        }
     }
 } 
