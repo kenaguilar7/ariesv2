@@ -1,4 +1,4 @@
-﻿using AriesContador.Core.Models.Accounts;
+using AriesContador.Core.Models.Accounts;
 using AriesContador.Core.Models.Companies;
 using AriesContador.Core.Repositories;
 using AriesContador.Data.Internal.DataAccess;
@@ -83,6 +83,31 @@ namespace AriesContador.Data.Repositories
         public Task AddAsync(Account entity)
         {
             throw new NotImplementedException();
+        }
+
+        public async Task<Account> GetAccountWithChildBalances(int accountId, string companyId, DateTime startMonth, DateTime endMonth)
+        {
+            MySqlDataAccessAsync dataAccess = new MySqlDataAccessAsync(_connectionString);
+            var parameters = new
+            {
+                AccountId = accountId,
+                CompanyId = companyId,
+                StartMonth = $"{startMonth.Year}{startMonth.Month:D2}",
+                EndMonth = $"{endMonth.Year}{endMonth.Month:D2}"
+            };
+
+            // Get the account and its child accounts with balances
+            var accounts = await dataAccess.LoadData<Account, dynamic>("SP_GetAccountHierarchyWithBalances", parameters);
+            
+            if (!accounts.Any())
+                return null;
+
+            // Build the account hierarchy and calculate balances
+            var accountsList = accounts.ToList();
+            accountsList
+                .OrderByDescTree()
+                .BuildAccountsBalance();
+            return accountsList.First(a=> a.Id == accountId);
         }
     }
 }

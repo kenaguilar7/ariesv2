@@ -1,5 +1,6 @@
-﻿using Aries.WebServices.FinancialServices;
+using Aries.WebServices.FinancialServices;
 using AriesContador.Core.Models.Patterns.Command;
+using AriesContador.Core.Models.Accounts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -37,6 +38,29 @@ namespace Aries.WebAPI.Controllers
             try
             {
                 var account = await _accountService.FindAccount(accountId);
+                return Ok(account);
+            }
+            catch (Exception ex)
+            {
+                return HandleException(ex);
+            }
+        }
+
+        [HttpGet("balance/{accountId}")]
+        public async Task<IActionResult> GetAccountBalances(
+            int accountId,
+            [FromQuery] string companyId,
+            [FromQuery] DateTime startMonth,
+            [FromQuery] DateTime endMonth)
+        {
+            try
+            {
+                var account = await _accountService.GetAccountBalances(
+                    accountId,
+                    companyId,
+                    startMonth,
+                    endMonth);
+                    
                 return Ok(account);
             }
             catch (Exception ex)

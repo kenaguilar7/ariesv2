@@ -1,6 +1,7 @@
-﻿using AriesContador.Core.Models.Accounts;
+using AriesContador.Core.Models.Accounts;
 using AriesContador.Core.Models.PostingPeriods;
 using AriesContador.Core.Repositories;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -15,6 +16,7 @@ namespace Aries.WebServices.FinancialServices
         Task CreateAccount(Account account);
         Task UpdateAccount(Account account);
         Task<IEnumerable<Account>> GetAccounts(string companyId);
+        Task<Account> GetAccountBalances(int accountId, string companyId, DateTime startMonth, DateTime endMonth);
     }
 
     public class AccountService : IAccountService
@@ -57,6 +59,12 @@ namespace Aries.WebServices.FinancialServices
         public Task UpdateAccount(Account account)
         {
             throw new System.NotImplementedException();
+        }
+
+        public async Task<Account> GetAccountBalances(int accountId, string companyId, DateTime startMonth, DateTime endMonth)
+        {
+            // Get all child Accounts
+            return await _accountRepository.GetAccountWithChildBalances(accountId, companyId, startMonth, endMonth);
         }
     }
 }

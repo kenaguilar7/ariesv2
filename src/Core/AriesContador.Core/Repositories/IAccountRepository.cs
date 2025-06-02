@@ -1,4 +1,4 @@
-﻿using AriesContador.Core.Models.Accounts;
+using AriesContador.Core.Models.Accounts;
 using AriesContador.Core.Models.JournalEntries;
 using System;
 using System.Collections.Generic;
@@ -12,6 +12,7 @@ namespace AriesContador.Core.Repositories
         Task<Account> GetById(int id); 
         IEnumerable<Account> FindByCompanyId(string companyId);
         IEnumerable<Account> GetDefaultAccounts();
-        IEnumerable<Account> AccountsWithBalanceByDateRange(BasicReportParam reportParam); 
+        IEnumerable<Account> AccountsWithBalanceByDateRange(BasicReportParam reportParam);
+        Task<Account> GetAccountWithChildBalances(int accountId, string companyId, DateTime startMonth, DateTime endMonth);
     }
 }
