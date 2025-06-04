@@ -7,7 +7,31 @@ namespace Aries.Contabilidad.Models.Accounts
     {
         public int Id { get; set; }
         public int? FatherAccount { get; set; }
-        public DebOrCred DebOCred { get; set; }
+        private DebOrCred _debOCred;  // Backing field
+
+        public DebOrCred DebOCred
+        {
+            //get { return _debOCred; }
+            get
+            {
+                switch (this.AccountTag)
+                {
+                    case AccountTag.Activo:
+                    case AccountTag.CostoVenta:
+                    case AccountTag.Egreso:
+                        return DebOrCred.Debito;
+                    case AccountTag.Ingreso:
+                    case AccountTag.Pasivo:
+                    case AccountTag.Patrimonio:
+                        return DebOrCred.Credito;
+                       
+                    default:
+                        return DebOrCred.Debito; // Default to Debito if no match found
+                        
+                }
+            }
+        }
+
         public decimal PriorBalance { get; set; }
         public decimal PriorBalanceForeign { get; set; }
         public DateTime UpdatedAt { get; set; }

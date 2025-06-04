@@ -3,20 +3,16 @@
 @using Aries.Contabilidad.Models.Utils
 
 <MudTd ColSpan="2">
-    <MudSelect T="int"
-    @bind-Value="Line.AccountId"
-    Label="Account"
-    Variant="Variant.Outlined"
-    Dense="true"
-    Class="flex-grow-1">
-        @if (Accounts != null)
-        {
-            @foreach (var account in Accounts)
-            {
-                <MudSelectItem Value="@account.Id">@account.Name</MudSelectItem>
-            }
-        }
-    </MudSelect>
+    <MudToggleIconButton @bind-Toggled="@_open" Icon="@Icons.Material.Filled.Fullscreen" Color="@Color.Primary" ToggledIcon="@Icons.Material.Filled.FullscreenExit" ToggledColor="@Color.Secondary" />
+
+    <MudPopover Open="@_open" Fixed="true" Class="px-4 pt-4">
+    <div class="d-flex flex-column">
+        
+        <AccountTreeView Accounts="@Accounts" OnAccountSelected="HandleAccountSelected" />
+        <MudButton OnClick="@ToggleOpen" Class="ml-auto mr-n3 mb-1" Color="Color.Error">Close</MudButton>
+    </div>
+</MudPopover>
+
     <MudTextField @bind-Value="Line.Memo"
     Label="Memo"
     Variant="Variant.Outlined"
@@ -85,6 +81,8 @@
 
 @code {
     private bool _isSaved = false;
+    private bool _open;
+    private void ToggleOpen() => _open = !_open;
 
     /// <summary>
     /// The journal entry line being edited
@@ -167,5 +165,16 @@
     private async Task NotifyChange()
     {
         await OnChange.InvokeAsync();
+    }
+
+    
+    private void HandleAccountSelected(Account account)
+    {
+        if(account == null)
+            return; 
+
+        Line.AccountId = account.Id;
+        Line.AccountName = account.Name; 
+        StateHasChanged();
     }
 }

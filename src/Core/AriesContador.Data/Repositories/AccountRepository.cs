@@ -103,11 +103,9 @@ namespace AriesContador.Data.Repositories
                 return null;
 
             // Build the account hierarchy and calculate balances
-            var accountsList = accounts.ToList();
-            accountsList
-                .OrderByDescTree()
-                .BuildAccountsBalance();
-            return accountsList.First(a=> a.Id == accountId);
+            accounts.BuildAccountsBalance();
+
+            return accounts.First(a=> a.Id == accountId);
         }
     }
 }

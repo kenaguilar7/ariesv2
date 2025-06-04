@@ -13,14 +13,14 @@
                 </MudButton>
             </ToolBarContent>
             <HeaderContent>
-                <MudTh>Account</MudTh>
-                <MudTh>Description</MudTh>
-                <MudTh>Currency</MudTh>
-                <MudTh>Rate</MudTh>
-                <MudTh Style="text-align: right">Foreign Debit</MudTh>
-                <MudTh Style="text-align: right">Foreign Credit</MudTh>
-                <MudTh Style="text-align: right">Debit</MudTh>
-                <MudTh Style="text-align: right">Credit</MudTh>
+            <MudTh MudTableSortLabel>Account</MudTh>
+            <MudTh MudTableSortLabel>Description</MudTh>
+            <MudTh MudTableSortLabel>Currency</MudTh>
+            <MudTh MudTableSortLabel>Rate</MudTh>
+            <MudTh MudTableSortLabel  Style="text-align: right">Foreign Debit</MudTh>
+            <MudTh MudTableSortLabel Style="text-align: right">Foreign Credit</MudTh>
+            <MudTh MudTableSortLabel Style="text-align: right">Debit</MudTh>
+            <MudTh MudTableSortLabel Style="text-align: right">Credit</MudTh>
                 <MudTh></MudTh>
             </HeaderContent>
             <RowTemplate>
@@ -55,16 +55,15 @@
                 }
 
                 @if (_editingLine != context){
-                <MudTd>
+                <MudTd Class="d-flex flex-row gap-2">
                     <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                    Color="Color.Info"
                                    Size="Size.Small"
-                                   Class="ma-1"
                                    OnClick="@(() => StartEditing(context))" />
+
                     <MudIconButton Icon="@Icons.Material.Filled.Delete"
                                    Color="Color.Error"
                                    Size="Size.Small"
-                                   Class="ma-1"
                                    OnClick="@(() => HandleLineDeleted(context))" />
                 </MudTd>
                 }

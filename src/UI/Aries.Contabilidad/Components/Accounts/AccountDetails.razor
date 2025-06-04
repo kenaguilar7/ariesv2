@@ -8,9 +8,12 @@
             <MudText Typo="Typo.subtitle2">Nombre:</MudText>
             @if(Account != null)
             {
-                 <MudText Class="ml-2">@Account.Name</MudText>
+                <MudText Class="ml-2">@Account.Name</MudText>
             }
+            else
+            {
                 <MudText Class="ml-2">No se ha seleccionado ninguna cuenta</MudText>
+            }
         </MudListItem>
 
         <MudListItem T="string">
