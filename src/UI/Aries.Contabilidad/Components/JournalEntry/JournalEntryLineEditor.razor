@@ -45,19 +45,18 @@
         <MudSelectItem Value="Currency.colones">Colones</MudSelectItem>
         <MudSelectItem Value="Currency.dolares">Dólares</MudSelectItem>
     </MudSelect>
-    <MudNumericField Value="Line.RateAmount"
+    <MudNumericField @bind-Value="Line.RateAmount"
     Label="Exchange Rate"
     Variant="Variant.Outlined"
     Dense="true"
     Format="N4"
     Min="0"
-    Style="width: 150px"
-    ValueChanged="@((decimal val) => OnRateAmountChanged(val))"
-    Immediate="true" />
+    Style="width: 150px" />
 </MudTd>
 
 <MudTd ColSpan="2">
-    <MudNumericField @bind-Value="DebitAmount"
+    <MudNumericField Value="DebitAmount"
+    ValueChanged="@((decimal val) => OnDebitAmountChanged(val))"
     Label="@($"{(Line.Currency == Currency.dolares ? "USD" : "CRC")} Debit")"
     Variant="Variant.Outlined"
     Dense="true"
@@ -65,15 +64,14 @@
     Min="0"
     Class="flex-grow-1"/>
 
-    <MudNumericField @bind-Value="CreditAmount"
+    <MudNumericField Value="CreditAmount"
+    ValueChanged="@((decimal val) => OnCreditAmountChanged(val))"
     Label="@($"{(Line.Currency == Currency.dolares ? "USD" : "CRC")} Credit")"
     Variant="Variant.Outlined"
     Dense="true"
     Format="N2"
     Min="0"
     Class="flex-grow-1" />
-
-
 </MudTd>
 
 <MudTd ColSpan="3" Style="text-align: right">
@@ -126,7 +124,7 @@
 
     private List<Account> Accounts { get; set; } = new();
     private decimal DebitAmount { get; set; }
-    private decimal CreditAmount {get; set; }
+    private decimal CreditAmount { get; set; }
 
     protected override void OnInitialized()
     {
@@ -174,33 +172,44 @@
         }
     }
 
-    private void OnRateAmountChanged(decimal newRate)
+    private void OnDebitAmountChanged(decimal value)
     {
-        Line.RateAmount = newRate;
-        if (newRate > 0 && Line.ForeignAmount > 0)
+        DebitAmount = value;
+        if (value > 0)
         {
-            Line.Amount = Line.ForeignAmount * newRate;
+            CreditAmount = 0;
+            Line.DebOrCred = DebOrCred.Debito;
+            Line.Amount = value;
+        }
+    }
+
+    private void OnCreditAmountChanged(decimal value)
+    {
+        CreditAmount = value;
+        if (value > 0)
+        {
+            DebitAmount = 0;
+            Line.DebOrCred = DebOrCred.Credito;
+            Line.Amount = value;
         }
     }
 
     private async Task HandleSave()
     {
-        if (Line.Currency == Currency.colones)
+        if (Line.AccountId == 0)
         {
-            Line.Amount = Line.DebOrCred == DebOrCred.Debito ? DebitAmount : CreditAmount;
-            Line.ForeignAmount = 0; 
-        }
-        else
-        {
-            Line.ForeignAmount = Line.DebOrCred == DebOrCred.Debito ? DebitAmount : CreditAmount;
-            Line.Amount = Line.ForeignAmount * Line.RateAmount;
+            return;
         }
 
-        if (Line.AccountId == 0 || Line.ForeignAmount == 0)
+        // Make sure we have either a debit or credit amount
+        if (DebitAmount == 0 && CreditAmount == 0)
         {
-            // return;s
+            return;
         }
 
+        // Just set the amount based on which field was filled
+        Line.Amount = Line.DebOrCred == DebOrCred.Debito ? DebitAmount : CreditAmount;
+        
         _isSaved = true;
         await NotifyChange();
     }
