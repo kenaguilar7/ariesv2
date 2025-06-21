@@ -80,11 +80,32 @@
 
     private async Task NavigateToDashboard(string companyId)
     {
-        var selectedCompany = companies.First(comp => comp.Code == companyId); 
-        if (selectedCompany != null)
+        try
         {
-            await LocalStorage.StoreCompanyInLocalStorage(selectedCompany);
+            var selectedCompany = companies?.FirstOrDefault(comp => comp.Code == companyId);
+            if (selectedCompany != null)
+            {
+                Console.WriteLine($"Storing company with code: {selectedCompany.Code}");
+                await LocalStorage.StoreCompanyInLocalStorage(selectedCompany);
+                await JSRuntime.InvokeVoidAsync("console.log", "Company stored:", selectedCompany);
+                
+                // Verify storage
+                var storedCompany = await LocalStorage.GetStoredCompany();
+                Console.WriteLine($"Verified stored company code: {storedCompany?.Code ?? "null"}");
+                
+                NavigationManager.NavigateTo($"/dashboard/{companyId}");
+            }
+            else
+            {
+                Console.WriteLine($"Company with code {companyId} not found");
+                await JSRuntime.InvokeVoidAsync("alert", "Error: Company not found");
+            }
         }
-        NavigationManager.NavigateTo($"/dashboard/{companyId}");
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error in NavigateToDashboard: {ex.Message}");
+            await JSRuntime.InvokeVoidAsync("console.error", "Error storing company:", ex);
+            await JSRuntime.InvokeVoidAsync("alert", "Error storing company data");
+        }
     }
 } 

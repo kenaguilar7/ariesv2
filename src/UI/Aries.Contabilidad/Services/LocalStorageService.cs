@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Aries.Contabilidad.Models.Auth;
 using Aries.Contabilidad.Models.DTOs;
+using Aries.Contabilidad.Models.Enums;
 using Microsoft.JSInterop;
 
 namespace Aries.Contabilidad.Services
@@ -26,30 +27,32 @@ namespace Aries.Contabilidad.Services
         public const string COMPANY_DATA_KEY = "company_data";
         public const string CURRENT_USER_KEY = "current_user_data";
         public const string AUTH_TOKEN_KEY = "auth_token";
+        private readonly JsonSerializerOptions _jsonOptions;
 
         public LocalStorageService(IJSRuntime jsRuntime)
         {
             _jsRuntime = jsRuntime;
+            _jsonOptions = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                WriteIndented = true
+            };
         }
 
         public async Task StoreCompanyInLocalStorage(CompanyDto company)
         {
             try
             {
-                var companyData = new
-                {
-                    selectedCompany = new
-                    {
-                        id = company.Id,
-                        code = company.Code,
-                        name = company.CompanyName,
-                        idType = company.IdType,
-                        numberId = company.NumberId,
-                        moneyType = company.MoneyType,
-                        lastAccessed = DateTime.Now
-                    }
-                };
-                await SetItem(COMPANY_DATA_KEY, JsonSerializer.Serialize(companyData));
+                Console.WriteLine($"Attempting to store company with code: {company.Code}");
+                
+                // Store the entire CompanyDto directly
+                var jsonData = JsonSerializer.Serialize(company, _jsonOptions);
+                Console.WriteLine($"Serialized company data: {jsonData}");
+                await SetItem(COMPANY_DATA_KEY, jsonData);
+                
+                // Verify storage
+                var verifyData = await GetItem(COMPANY_DATA_KEY);
+                Console.WriteLine($"Verified stored data: {verifyData}");
             }
             catch (Exception ex)
             {
@@ -63,43 +66,28 @@ namespace Aries.Contabilidad.Services
             try
             {
                 var companyDataJson = await GetItem(COMPANY_DATA_KEY);
+                Console.WriteLine($"Retrieved company data from storage: {companyDataJson}");
+                
                 if (string.IsNullOrEmpty(companyDataJson))
-                    return null;
-
-                var userData = JsonSerializer.Deserialize<UserData>(companyDataJson);
-                if (userData?.selectedCompany == null)
-                    return null;
-
-                return new CompanyDto
                 {
-                    Id = userData.selectedCompany.id,
-                    Code = userData.selectedCompany.code,
-                    CompanyName = userData.selectedCompany.name,
-                    //IdType = userData.selectedCompany.idType,
-                    //NumberId = userData.selectedCompany.numberId,
-                    //MoneyType = userData.selectedCompany.moneyType
-                };
+                    Console.WriteLine("No company data found in storage");
+                    return null;
+                }
+
+                var company = JsonSerializer.Deserialize<CompanyDto>(companyDataJson, _jsonOptions);
+                if (company == null)
+                {
+                    Console.WriteLine("Could not deserialize company data");
+                    return null;
+                }
+
+                Console.WriteLine($"Successfully retrieved company with code: {company.Code}");
+                return company;
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error retrieving company data from localStorage: {ex}");
                 return null;
-            }
-        }
-
-        public async Task<UserInfo> GetCurrentUserSesion()
-        {
-            try
-            {
-                var userJson = await GetItem(CURRENT_USER_KEY);
-                if (string.IsNullOrEmpty(userJson))
-                    return new UserInfo();
-                return JsonSerializer.Deserialize<UserInfo>(userJson) ?? new UserInfo();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error retrieving user info from localStorage: {ex}");
-                return new UserInfo();
             }
         }
 
@@ -146,12 +134,28 @@ namespace Aries.Contabilidad.Services
         {
             try
             {
-                await SetItem(CURRENT_USER_KEY, JsonSerializer.Serialize(user));
+                await SetItem(CURRENT_USER_KEY, JsonSerializer.Serialize(user, _jsonOptions));
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error storing user data in localStorage: {ex}");
                 throw;
+            }
+        }
+
+        public async Task<UserInfo> GetCurrentUserSesion()
+        {
+            try
+            {
+                var userJson = await GetItem(CURRENT_USER_KEY);
+                if (string.IsNullOrEmpty(userJson))
+                    return new UserInfo();
+                return JsonSerializer.Deserialize<UserInfo>(userJson, _jsonOptions) ?? new UserInfo();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error retrieving user info from localStorage: {ex}");
+                return new UserInfo();
             }
         }
 
@@ -173,22 +177,6 @@ namespace Aries.Contabilidad.Services
         public async Task RemoveCurrentUser()
         {
             await RemoveItem(CURRENT_USER_KEY);
-        }
-
-        private class UserData
-        {
-            public SelectedCompany? selectedCompany { get; set; }
-        }
-
-        private class SelectedCompany
-        {
-            public int id { get; set; }
-            public string code { get; set; } = string.Empty;
-            public string name { get; set; } = string.Empty;
-            public string idType { get; set; } = string.Empty;
-            public string numberId { get; set; } = string.Empty;
-            public string moneyType { get; set; } = string.Empty;
-            public DateTime lastAccessed { get; set; }
         }
     }
 } 
