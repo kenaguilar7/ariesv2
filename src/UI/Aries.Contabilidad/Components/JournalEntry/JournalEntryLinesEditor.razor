@@ -135,6 +135,11 @@
             await OnLineChanged.InvokeAsync(line);
             _tempNewLine = null;
         }
+        else 
+        {
+            // Handle existing line update
+            await HandleLineChanged(line);
+        }
         _editingLine = null;
         _isAddingNew = false;
         StateHasChanged();

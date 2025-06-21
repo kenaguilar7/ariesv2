@@ -136,11 +136,24 @@
         try
         {
             Accounts = await AccountService.GetAccountsAsync(CompanyId);
-            DebitAmount = Line.DebOrCred == DebOrCred.Debito ? Line.Amount : 0;
-            CreditAmount = Line.DebOrCred == DebOrCred.Credito ? Line.Amount : 0;
+            
+            // Initialize amounts based on existing line data
+            if (Line != null)
+            {
+                DebitAmount = Line.DebOrCred == DebOrCred.Debito ? Line.Amount : 0;
+                CreditAmount = Line.DebOrCred == DebOrCred.Credito ? Line.Amount : 0;
+                
+                // If it's a foreign currency transaction, set the foreign amounts
+                if (Line.Currency == Currency.dolares)
+                {
+                    Line.ForeignAmount = Line.Amount;
+                    Line.Amount = Line.ForeignAmount * Line.RateAmount;
+                }
+            }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Console.WriteLine($"Error in OnInitializedAsync: {ex.Message}");
             // Handle error appropriately
         }
     }
@@ -207,8 +220,20 @@
             return;
         }
 
-        // Just set the amount based on which field was filled
-        Line.Amount = Line.DebOrCred == DebOrCred.Debito ? DebitAmount : CreditAmount;
+        // Set the amount based on which field was filled
+        decimal enteredAmount = Line.DebOrCred == DebOrCred.Debito ? DebitAmount : CreditAmount;
+        
+        // Handle foreign currency calculations
+        if (Line.Currency == Currency.dolares)
+        {
+            Line.ForeignAmount = enteredAmount;
+            Line.Amount = Line.ForeignAmount * Line.RateAmount;
+        }
+        else
+        {
+            Line.Amount = enteredAmount;
+            Line.ForeignAmount = 0; // Reset foreign amount for local currency
+        }
         
         _isSaved = true;
         await NotifyChange();
