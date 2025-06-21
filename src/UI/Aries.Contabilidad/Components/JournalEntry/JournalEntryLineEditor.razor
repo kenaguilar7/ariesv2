@@ -3,46 +3,36 @@
 @using Aries.Contabilidad.Models.Utils
 
 <MudTd ColSpan="2">
-    @* <MudToggleIconButton @bind-Toggled="@_open" Icon="@Icons.Material.Filled.Fullscreen" Color="@Color.Primary" ToggledIcon="@Icons.Material.Filled.FullscreenExit" ToggledColor="@Color.Secondary" /> *@
-
-@*     <MudPopover Open="@_open"
-                Fixed="true"
-                AnchorOrigin="Origin.CenterCenter"
-                TransformOrigin="Origin.CenterCenter"
-                Class="account-selector-popover"
-                Style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1300;">
-        <div class="popover-container" style="pointer-events: auto;">
-            <div class="popover-content">
-                <div class="scrollable-treeview">
-                    <AccountTreeView Accounts="@Accounts" OnAccountSelected="HandleAccountSelected" />
-                </div>
-                <div class="popover-actions">
-                    <MudButton OnClick="@ToggleOpen" Color="Color.Error" Variant="Variant.Text" Size="Size.Small">
-                        Cerrar
-                    </MudButton>
-                </div>
+    <MudExpansionPanel @ref="_expansionPanel" @bind-IsExpanded="@_isExpanded">
+        <TitleContent>
+            <div class="d-flex align-center">
+                @if (string.IsNullOrEmpty(Line.AccountName))
+                {
+                    <MudText Typo="Typo.body1" Color="Color.Default">Select an account...</MudText>
+                }
+                else
+                {
+                    <div class="d-flex flex-column">
+                        <MudText Typo="Typo.body1" Color="Color.Primary">@Line.AccountName</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Click to change account</MudText>
+                    </div>
+                }
             </div>
-        </div>
-    </MudPopover> *@
-
-    <MudExpansionPanel Text="@(Line.AccountName ?? string.Empty)">
-        <MudTextField @bind-Value="_searchText"
-                      Placeholder="Buscar cuenta..."
-                      Immediate="true"
-                      Variant="Variant.Outlined"
-                      Adornment="Adornment.Start"
-                      Icon="@Icons.Material.Filled.Search"
-                      Class="mb-2" />
-        <div class="scrollable-treeview">
-            <AccountTreeView Accounts="@Accounts" OnAccountSelected="HandleAccountSelected" />
-        </div>
+        </TitleContent>
+        <ChildContent>
+            <div class="scrollable-treeview">
+                <AccountTreeView @ref="_accountTreeView" 
+                               Accounts="@Accounts" 
+                               OnAccountSelected="HandleAccountSelected" />
+            </div>
+        </ChildContent>
     </MudExpansionPanel>
 
     <MudTextField @bind-Value="Line.Memo"
     Label="Memo"
     Variant="Variant.Outlined"
     Dense="true"
-    Class="flex-grow-1" />
+    Class="flex-grow-1 mt-2" />
 </MudTd>
 
 <MudTd ColSpan="2">
@@ -62,6 +52,7 @@
     Format="N4"
     Min="0"
     Style="width: 150px"
+    ValueChanged="@((decimal val) => OnRateAmountChanged(val))"
     Immediate="true" />
 </MudTd>
 
@@ -106,8 +97,9 @@
 
 @code {
     private bool _isSaved = false;
-    private bool _open;
-    private void ToggleOpen() => _open = !_open;
+    private bool _isExpanded;
+    private MudExpansionPanel _expansionPanel;
+    private AccountTreeView _accountTreeView;
 
     /// <summary>
     /// The journal entry line being edited
@@ -136,58 +128,10 @@
     private decimal DebitAmount { get; set; }
     private decimal CreditAmount {get; set; }
 
-    private void OnRateAmountChanged(decimal newRate)
-    {
-        Line.RateAmount = newRate;
-        if (newRate > 0 && Line.ForeignAmount > 0)
-        {
-            Line.Amount = Line.ForeignAmount * newRate;
-        }
-    }
-
-    private async Task HandleSave()
-    {
-
-        if (Line.Currency == Currency.colones)
-        {
-            Line.Amount = Line.DebOrCred == DebOrCred.Debito ? DebitAmount : CreditAmount;
-            Line.ForeignAmount = 0; 
-        }
-        else
-        {
-            Line.ForeignAmount = Line.DebOrCred == DebOrCred.Debito ? DebitAmount : CreditAmount;
-            Line.Amount  = Line.ForeignAmount * Line.RateAmount;
-        }
-
-        if (Line.AccountId == 0 || Line.ForeignAmount == 0)
-        {
-            // return;s
-        }
-
-        _isSaved = true;
-        await NotifyChange();
-    }
-
-    private async Task HandleCancel()
-    {
-       await OnCancelAction.InvokeAsync();
-    }
-
-    private string _searchText = string.Empty;
-    private List<Account> _allAccounts = new();
-
     protected override void OnInitialized()
     {
-        _allAccounts = Accounts; // Guardamos una copia de todas las cuentas
+        _isExpanded = false;
     }
-
-    private IEnumerable<Account> FilteredAccounts =>
-        string.IsNullOrWhiteSpace(_searchText)
-            ? _allAccounts
-            : _allAccounts.Where(a =>
-                a.Name.Contains(_searchText, StringComparison.OrdinalIgnoreCase) ||
-                a.Id.ToString().Contains(_searchText));
-        
 
     protected override async Task OnInitializedAsync()
     {
@@ -208,15 +152,62 @@
         await OnChange.InvokeAsync();
     }
 
-    
-    private void HandleAccountSelected(Account account)
+    private async void HandleAccountSelected(Account account)
     {
-        if(account == null)
-            return; 
+        try 
+        {
+            if(account == null) return;
 
-        Line.AccountId = account.Id;
-        Line.AccountName = account.Name; 
-        StateHasChanged();
+            Line.AccountId = account.Id;
+            Line.AccountName = account.Name;
+            
+            if (_expansionPanel != null)
+            {
+                await _expansionPanel.CollapseAsync();
+            }
+            
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error in HandleAccountSelected: {ex.Message}");
+        }
+    }
+
+    private void OnRateAmountChanged(decimal newRate)
+    {
+        Line.RateAmount = newRate;
+        if (newRate > 0 && Line.ForeignAmount > 0)
+        {
+            Line.Amount = Line.ForeignAmount * newRate;
+        }
+    }
+
+    private async Task HandleSave()
+    {
+        if (Line.Currency == Currency.colones)
+        {
+            Line.Amount = Line.DebOrCred == DebOrCred.Debito ? DebitAmount : CreditAmount;
+            Line.ForeignAmount = 0; 
+        }
+        else
+        {
+            Line.ForeignAmount = Line.DebOrCred == DebOrCred.Debito ? DebitAmount : CreditAmount;
+            Line.Amount = Line.ForeignAmount * Line.RateAmount;
+        }
+
+        if (Line.AccountId == 0 || Line.ForeignAmount == 0)
+        {
+            // return;s
+        }
+
+        _isSaved = true;
+        await NotifyChange();
+    }
+
+    private async Task HandleCancel()
+    {
+        await OnCancelAction.InvokeAsync();
     }
 }
 
@@ -252,11 +243,11 @@
 
     /* Scroll interno del TreeView */
     .scrollable-treeview {
-        flex: 1;
+        max-height: 300px;
         overflow-y: auto;
-        max-height: 40vh;
-        margin: -8px; /* Compensa el padding del contenedor */
-        padding: 8px; /* Vuelve a agregar espacio para el scrollbar */
+        border: 1px solid var(--mud-palette-lines-default);
+        border-radius: 4px;
+        padding: 8px;
     }
 
     /* Botones de acción alineados a la derecha */

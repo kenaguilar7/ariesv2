@@ -2,20 +2,32 @@
 @using Aries.Contabilidad.Models.Enums
 @using Aries.Contabilidad.Models.Utils
 
-<MudPaper Class="pa-4">
-    <MudTreeView T="Account" Items="@TreeViewItems" Hover="true" Dense="true" ExpandOnClick="true" SelectedValue="selectedAccount" SelectedValueChanged="HandleSelectedValueChanged">
+<MudStack>
+    <MudTextField T="string" 
+                Label="Search accounts" 
+                Adornment="Adornment.Start" 
+                AdornmentIcon="@Icons.Material.Filled.Search" 
+                @bind-Value="_searchText"
+                Immediate="true" 
+                Clearable="true" />
+
+    <MudTreeView T="Account" 
+                Items="@TreeViewItems" 
+                @ref="_treeView"
+                Hover="true" 
+                Dense="true" 
+                ExpandOnClick="true"
+                SelectedValueChanged="HandleSelectedValueChanged">
         <ItemTemplate>
-            <MudTreeViewItem Items="@(GetChildTreeItems(context.Value))" Value="@context.Value" Expanded="true">
-                <Content>
-                    <div class="d-flex align-center gap-4 cursor-pointer">
-                        <MudText>@context.Value.Name</MudText>
-                        <MudText>@context.Value.Id</MudText>
-                    </div>
-                </Content>
+            <MudTreeViewItem Items="@(GetChildTreeItems(context.Value))" 
+                            Value="@context.Value" 
+                            Text="@($"{context.Value.Name} ({context.Value.Id})")"
+                            Expanded="@(ShouldExpand(context.Value))"
+                            Visible="@(ShouldBeVisible(context.Value))">
             </MudTreeViewItem>
         </ItemTemplate>
     </MudTreeView>
-</MudPaper>
+</MudStack>
 
 @code {
     [Parameter]
@@ -25,14 +37,17 @@
     public EventCallback<Account> OnAccountSelected { get; set; }
 
     private Account selectedAccount;
+    private MudTreeView<Account> _treeView;
+    private string _searchText = string.Empty;
 
     private IReadOnlyCollection<TreeItemData<Account>> TreeViewItems =>
-        RootAccounts.Select(a => new TreeItemData<Account>
+        RootAccounts
+            .Select(a => new TreeItemData<Account>
             {
                 Value = a,
                 Text = a.Name,
-                Expanded = true // Opcional: expandir nodos por defecto
-            }).ToList().AsReadOnly();
+                Expanded = ShouldExpand(a)
+            }).ToList();
 
     private IEnumerable<Account> RootAccounts => Accounts.Where(a => !a.FatherAccount.HasValue);
 
@@ -41,13 +56,57 @@
         return Accounts
             .Where(a => a.FatherAccount == parent.Id)
             .Select(a => new TreeItemData<Account>
-                {
-                    Value = a,
-                    Text = a.Name,
-                    Expanded = false
-                })
-            .ToList()
-            .AsReadOnly();
+            {
+                Value = a,
+                Text = a.Name,
+                Expanded = ShouldExpand(a)
+            })
+            .ToList();
+    }
+
+    private bool ShouldExpand(Account account)
+    {
+        if (string.IsNullOrWhiteSpace(_searchText))
+            return false;
+
+        return HasMatchInSubtree(account);
+    }
+
+    private bool ShouldBeVisible(Account account)
+    {
+        if (string.IsNullOrWhiteSpace(_searchText))
+            return true;
+
+        return IsMatch(account) || HasMatchInSubtree(account);
+    }
+
+    private bool HasMatchInSubtree(Account parent)
+    {
+        var children = Accounts.Where(a => a.FatherAccount == parent.Id);
+        
+        foreach (var child in children)
+        {
+            if (IsMatch(child) || HasMatchInSubtree(child))
+                return true;
+        }
+        
+        return false;
+    }
+
+    private bool IsMatch(Account account)
+    {
+        if (account == null)
+            return false;
+
+        var searchTerms = _searchText.Trim()
+                                   .ToLowerInvariant()
+                                   .Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        
+        var accountName = account.Name.ToLowerInvariant();
+        var accountId = account.Id.ToString();
+
+        return searchTerms.All(term => 
+            accountName.Contains(term) || accountId.Contains(term));
     }
 
     private async Task HandleSelectedValueChanged(Account account)
