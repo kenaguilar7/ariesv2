@@ -5,17 +5,22 @@ namespace Aries.Contabilidad.Services
 {
     public class JournalEntryLineService : BaseHttpService, IJournalEntryLineService
     {
-        public JournalEntryLineService(IHttpClientFactory httpClientFactory, ILogger<JournalEntryService> logger)
+        private readonly ILocalStorageService _localStorageService;
+
+        public JournalEntryLineService(IHttpClientFactory httpClientFactory, ILogger<JournalEntryService> logger, ILocalStorageService localStorageService)
             : base(httpClientFactory, logger)
         {
-            
-            
+            _localStorageService = localStorageService;
         }
 
         public async Task<int> CreateJournalEntryLineAsync(JournalEntryLineDto journalEntryLine)
         {
             try
             {
+                var user = await _localStorageService.GetCurrentUserSesion();
+                journalEntryLine.CreatedBy = user.Id;
+                journalEntryLine.UpdatedBy = user.Id;
+
                 var response = await _httpClient.PostAsJsonAsync("JournalEntryLine/CreateJournalEntryLine", journalEntryLine);
                 response.EnsureSuccessStatusCode();
                 return await response.Content.ReadFromJsonAsync<int>();
@@ -30,6 +35,9 @@ namespace Aries.Contabilidad.Services
         {
             try
             {
+                var user = await _localStorageService.GetCurrentUserSesion();
+                journalEntryLine.UpdatedBy = user.Id;
+
                 var response = await _httpClient.PostAsJsonAsync("JournalEntryLine/UpdateJournalEntryLine", journalEntryLine);
                 response.EnsureSuccessStatusCode();
             }
@@ -43,6 +51,9 @@ namespace Aries.Contabilidad.Services
         {
             try
             {
+                var user = await _localStorageService.GetCurrentUserSesion();
+                journalEntryLine.UpdatedBy = user.Id;
+
                 var response = await _httpClient.PostAsJsonAsync("JournalEntryLine/DeleteJournalEntryLine", journalEntryLine);
                 response.EnsureSuccessStatusCode();
             }

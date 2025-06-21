@@ -13,14 +13,19 @@ namespace Aries.Contabilidad.Services
         Task SetItem(string key, string value);
         Task RemoveItem(string key);
         Task StoreCurrentUser(UserInfo user);
-        Task<UserInfo> GetCurrentUserSesion(); 
+        Task<UserInfo> GetCurrentUserSesion();
+        Task<string?> GetAuthToken();
+        Task StoreAuthToken(string token);
+        Task RemoveAuthToken();
+        Task RemoveCurrentUser();
     }
 
     public class LocalStorageService : ILocalStorageService
     {
         private readonly IJSRuntime _jsRuntime;
-        private const string USER_DATA_KEY = "user_data";
-        private const string CURRENT_USER_DATA_KEY = "current_user_data";
+        public const string COMPANY_DATA_KEY = "company_data";
+        public const string CURRENT_USER_KEY = "current_user_data";
+        public const string AUTH_TOKEN_KEY = "auth_token";
 
         public LocalStorageService(IJSRuntime jsRuntime)
         {
@@ -31,7 +36,7 @@ namespace Aries.Contabilidad.Services
         {
             try
             {
-                var userData = new
+                var companyData = new
                 {
                     selectedCompany = new
                     {
@@ -44,7 +49,7 @@ namespace Aries.Contabilidad.Services
                         lastAccessed = DateTime.Now
                     }
                 };
-                await SetItem(USER_DATA_KEY, JsonSerializer.Serialize(userData));
+                await SetItem(COMPANY_DATA_KEY, JsonSerializer.Serialize(companyData));
             }
             catch (Exception ex)
             {
@@ -57,11 +62,11 @@ namespace Aries.Contabilidad.Services
         {
             try
             {
-                var userDataJson = await GetItem(USER_DATA_KEY);
-                if (string.IsNullOrEmpty(userDataJson))
+                var companyDataJson = await GetItem(COMPANY_DATA_KEY);
+                if (string.IsNullOrEmpty(companyDataJson))
                     return null;
 
-                var userData = JsonSerializer.Deserialize<UserData>(userDataJson);
+                var userData = JsonSerializer.Deserialize<UserData>(companyDataJson);
                 if (userData?.selectedCompany == null)
                     return null;
 
@@ -86,7 +91,7 @@ namespace Aries.Contabilidad.Services
         {
             try
             {
-                var userJson = await GetItem(CURRENT_USER_DATA_KEY);
+                var userJson = await GetItem(CURRENT_USER_KEY);
                 if (string.IsNullOrEmpty(userJson))
                     return new UserInfo();
                 return JsonSerializer.Deserialize<UserInfo>(userJson) ?? new UserInfo();
@@ -141,13 +146,33 @@ namespace Aries.Contabilidad.Services
         {
             try
             {
-                await SetItem(CURRENT_USER_DATA_KEY, JsonSerializer.Serialize(user));
+                await SetItem(CURRENT_USER_KEY, JsonSerializer.Serialize(user));
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error storing user data in localStorage: {ex}");
                 throw;
             }
+        }
+
+        public async Task<string?> GetAuthToken()
+        {
+            return await GetItem(AUTH_TOKEN_KEY);
+        }
+
+        public async Task StoreAuthToken(string token)
+        {
+            await SetItem(AUTH_TOKEN_KEY, token);
+        }
+
+        public async Task RemoveAuthToken()
+        {
+            await RemoveItem(AUTH_TOKEN_KEY);
+        }
+
+        public async Task RemoveCurrentUser()
+        {
+            await RemoveItem(CURRENT_USER_KEY);
         }
 
         private class UserData

@@ -6,9 +6,12 @@ namespace Aries.Contabilidad.Services
 {
     public class JournalEntryService : BaseHttpService, IJournalEntryService
     {
-        public JournalEntryService(IHttpClientFactory httpClientFactory, ILogger<JournalEntryService> logger)
+        private readonly ILocalStorageService _localStorageService;
+
+        public JournalEntryService(IHttpClientFactory httpClientFactory, ILogger<JournalEntryService> logger, ILocalStorageService localStorageService)
             : base(httpClientFactory, logger)
         {
+            _localStorageService = localStorageService;
         }
 
         public async Task<List<JournalEntryDto>> GetJournalEntriesAsync(int postingPeriodId, JournalEntryFilter journalEntryFilter)
@@ -40,6 +43,10 @@ namespace Aries.Contabilidad.Services
         {
             try
             {
+                var user = await _localStorageService.GetCurrentUserSesion();
+                journalEntry.CreatedBy = user.Id;
+                journalEntry.UpdatedBy = user.Id;
+
                 var response = await _httpClient.PostAsJsonAsync("JournalEntry/CreateJournalEntry", journalEntry);
                 response.EnsureSuccessStatusCode();
                 return await response.Content.ReadFromJsonAsync<int>();
@@ -54,6 +61,9 @@ namespace Aries.Contabilidad.Services
         {
             try
             {
+                var user = await _localStorageService.GetCurrentUserSesion();
+                journalEntry.UpdatedBy = user.Id;
+
                 var response = await _httpClient.PostAsJsonAsync("JournalEntry/UpdateJournalEntry", journalEntry);
                 response.EnsureSuccessStatusCode();
             }
@@ -67,6 +77,9 @@ namespace Aries.Contabilidad.Services
         {
             try
             {
+                var user = await _localStorageService.GetCurrentUserSesion();
+                journalEntry.UpdatedBy = user.Id;
+
                 var response = await _httpClient.PostAsJsonAsync("JournalEntry/DeleteJournalEntry", journalEntry);
                 response.EnsureSuccessStatusCode();
             }

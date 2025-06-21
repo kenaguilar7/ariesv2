@@ -3,7 +3,7 @@
 @using Aries.Contabilidad.Models.Utils
 
 <MudPaper Class="pa-4">
-        <MudTable Items="@Lines" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm" Class="mt-0" FixedHeader="true" 
+        <MudTable Items="@GetDisplayLines()" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm" Class="mt-0" FixedHeader="true" 
         Height="@("400px")">
             <ToolBarContent>
                 <MudButton Color="Color.Primary"
@@ -24,7 +24,6 @@
                 <MudTh></MudTh>
             </HeaderContent>
             <RowTemplate>
-
                 @if (_editingLine == context)
                 {
                     <JournalEntryLineEditor Line="@context"
@@ -51,7 +50,6 @@
                     <MudTd DataLabel="Credit" Style="text-align: right">
                         @(context.DebOrCred == DebOrCred.Credito ? context.Amount.ToString("N2") : "")
                     </MudTd>
-
                 }
 
                 @if (_editingLine != context){
@@ -67,18 +65,14 @@
                                    OnClick="@(() => HandleLineDeleted(context))" />
                 </MudTd>
                 }
-
             </RowTemplate>
-    @*          <PagerContent>
-                <MudTablePager PageSizeOptions="new int[]{5,25,50, 100}" />
-            </PagerContent> *@
         </MudTable>
 </MudPaper>
 
 @code {
-
     private JournalEntryLineDto? _editingLine;
     private bool _isAddingNew;
+    private JournalEntryLineDto? _tempNewLine;
 
     /// <summary>
     /// List of journal entry lines
@@ -101,21 +95,30 @@
     [Parameter]
     public EventCallback<JournalEntryLineDto> OnLineDeleted { get; set; }
 
-    private async void AddNewLine()
+    private List<JournalEntryLineDto> GetDisplayLines()
+    {
+        var displayLines = new List<JournalEntryLineDto>(Lines);
+        if (_tempNewLine != null)
+        {
+            displayLines.Add(_tempNewLine);
+        }
+        return displayLines;
+    }
+
+    private void AddNewLine()
     {
         if(_isAddingNew) return; 
 
-        var newLine = new JournalEntryLineDto
-            {
-                Date = DateTime.Now,
-                RateAmount = 1,
-                DebOrCred = DebOrCred.Debito, // Default to debit
-                Currency = Currency.dolares, // Default to local currency
-            };
-        Lines.Add(newLine);
-        _editingLine = newLine;
+        _tempNewLine = new JournalEntryLineDto
+        {
+            Date = DateTime.Now,
+            RateAmount = 1,
+            DebOrCred = DebOrCred.Debito, // Default to debit
+            Currency = Currency.dolares, // Default to local currency
+        };
+        _editingLine = _tempNewLine;
         _isAddingNew = true;
-        // await HandleLineChanged(newLine);
+        StateHasChanged();
     }
 
     private void StartEditing(JournalEntryLineDto line)
@@ -127,10 +130,13 @@
 
     private async Task FinishEditing(JournalEntryLineDto line)
     {
+        if (_isAddingNew)
+        {
+            await OnLineChanged.InvokeAsync(line);
+            _tempNewLine = null;
+        }
         _editingLine = null;
         _isAddingNew = false;
-
-        await OnLineChanged.InvokeAsync(line);
         StateHasChanged();
     }
 
@@ -142,7 +148,12 @@
     private async Task HandleCancelAction(JournalEntryLineDto line)
     {
         _editingLine = null;
-         _isAddingNew = false;
+        _isAddingNew = false;
+        if (_isAddingNew)
+        {
+            _tempNewLine = null;
+        }
+        StateHasChanged();
     }
 
     private async Task HandleLineDeleted(JournalEntryLineDto line)
@@ -154,6 +165,4 @@
         }
         await OnLineDeleted.InvokeAsync(line);
     }
-
-
 }

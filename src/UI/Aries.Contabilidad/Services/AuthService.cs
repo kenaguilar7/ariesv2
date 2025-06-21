@@ -9,15 +9,11 @@ namespace Aries.Contabilidad.Services
 {
     public class AuthService : BaseHttpService, IAuthService
     {
-        private readonly IJSRuntime _jsRuntime;
         private readonly ILocalStorageService _localStorageService;
-        private const string TOKEN_KEY = "auth_token";
-        private const string USER_KEY = "current_user_data";
 
-        public AuthService(IHttpClientFactory httpClientFactory, IJSRuntime jsRuntime, ILocalStorageService localStorageService)
+        public AuthService(IHttpClientFactory httpClientFactory, ILocalStorageService localStorageService)
             : base(httpClientFactory)
         {
-            _jsRuntime = jsRuntime;
             _localStorageService = localStorageService;
         }
 
@@ -31,12 +27,10 @@ namespace Aries.Contabilidad.Services
                     var result = await response.Content.ReadFromJsonAsync<AuthResponse>();
                     if (result != null)
                     {
-                        await _jsRuntime.InvokeVoidAsync("localStorage.setItem", TOKEN_KEY, result.Token);
-                        await _jsRuntime.InvokeVoidAsync("localStorage.setItem", USER_KEY, JsonSerializer.Serialize(result.User));
+                        await _localStorageService.StoreAuthToken(result.Token);
+                        await _localStorageService.StoreCurrentUser(result.User);
 
                         // Set the authorization header for future requests
-
-                        await _localStorageService.StoreCurrentUser(result.User);
                         _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", result.Token);
                         
                         return result;
@@ -52,8 +46,8 @@ namespace Aries.Contabilidad.Services
 
         public async Task LogoutAsync()
         {
-            await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", TOKEN_KEY);
-            await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", USER_KEY);
+            await _localStorageService.RemoveAuthToken();
+            await _localStorageService.RemoveCurrentUser();
             _httpClient.DefaultRequestHeaders.Authorization = null;
         }
 
@@ -61,7 +55,7 @@ namespace Aries.Contabilidad.Services
         {
             try
             {
-                var token = await _jsRuntime.InvokeAsync<string>("localStorage.getItem", TOKEN_KEY);
+                var token = await _localStorageService.GetAuthToken();
                 return !string.IsNullOrEmpty(token);
             }
             catch
