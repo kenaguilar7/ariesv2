@@ -18,4 +18,9 @@ namespace Aries.Contabilidad.Models.JournalEntries
         public decimal ForeignAmount { get; set; }
         public DebOrCred DebOrCred { get; set; }
     }
+
+    public class JournalEntryLineReportDto : JournalEntryLineDto
+    {
+
+    }
 } 

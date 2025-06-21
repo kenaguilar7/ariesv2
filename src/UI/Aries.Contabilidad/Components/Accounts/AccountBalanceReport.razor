@@ -92,10 +92,56 @@
                 <MudText>Seleccione una cuenta para ver sus saldos</MudText>
             }
         </MudTabPanel>
+        <MudTabPanel Text="Moviemientos">
+        <div class="d-flex gap-4 mb-4">
+      @*       <div class="flex-grow-1">
+                <PostingPeriodPicker AvailablePeriods="@availablePeriods"
+                                     SelectedDate="@fromDate"
+                                     OnDateSelected="HandleFromDateSelected" />
+            </div>
+            <div class="flex-grow-1">
+                <PostingPeriodPicker AvailablePeriods="@availablePeriods"
+                                     SelectedDate="@toDate"
+                                     OnDateSelected="HandleToDateSelected" />
+            </div> *@
+
+            <iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vQ8PKOWw0w4vGQSA9yPc1iyqvi7X-Yv-3C6DuqSdJGlTmft4q_PhBUHuH1PxM8GO1TTU1hqIJe_9R-F/pubhtml?widget=true&amp;headers=false"></iframe>
+        </div>
+        @if (Account != null)
+        {
+            <MudSimpleTable Dense="true" Hover="true">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Descripción</th>
+                        <th>Débitos</th>
+                        <th>Créditos</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var transaction in journalEntryLineReportDtos)
+                    {
+                        <tr>
+                            <td>@transaction.Date.ToShortDateString()</td>
+                            @* <td>@transaction.Description</td> *@
+                            <td>@transaction.Amount.ToString("N2")</td>
+                        </tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
+        }
+        else
+        {
+            <MudText>Seleccione una cuenta para ver sus movimientos</MudText>
+        }
+        </MudTabPanel>
     </MudTabs>
 @* </MudPaper> *@
 
 @code {
+
+
+
     [Parameter]
     public Account? Account { get; set; }
 
@@ -108,6 +154,7 @@
     private DateTime fromDate = DateTime.Today.AddMonths(-1);
     private DateTime toDate = DateTime.Today;
     private List<PostingPeriodDto> availablePeriods;
+    private List<JournalEntryLineReportDto> journalEntryLineReportDtos = new List<JournalEntryLineReportDto>();
 
     protected override async Task OnInitializedAsync()
     {

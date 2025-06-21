@@ -11,7 +11,7 @@ namespace Aries.Contabilidad.Services
         private readonly IJSRuntime _jsRuntime;
         private readonly IAuthService _authService;
         private const string TOKEN_KEY = "auth_token";
-        private const string USER_KEY = "user_data";
+        private const string USER_KEY = "current_user_data";
 
         public CustomAuthStateProvider(IJSRuntime jsRuntime, IAuthService authService)
         {

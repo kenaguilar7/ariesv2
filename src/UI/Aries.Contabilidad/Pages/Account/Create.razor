@@ -16,8 +16,9 @@
                 <div id="unique_id_scroll_section" class="ma-0" style="height:300px;overflow: auto;">
                     @if (accounts != null)
                     {
-                    
-                        <AccountTreeView Accounts="@accounts" OnAccountSelected="HandleAccountSelected" />
+                        <AccountTreeView 
+                            Accounts="@accounts" 
+                            OnAccountSelected="HandleAccountSelected" />
                     }
                     else
                     {
@@ -27,7 +28,7 @@
             </MudItem>
 
             <MudItem xs="12" md="4">
-                    <AccountDetails Account="@selectedAccount" />
+                <AccountDetails Account="@selectedAccount" />
             </MudItem>
 
             <MudDivider Class="my-2" />
@@ -35,7 +36,10 @@
             <MudItem xs="12" Class="shadow-none">
                 @if (selectedAccount != null)
                 {
-                    <AccountBalanceReport Account="@selectedAccount" OnDateRangeChanged="HandleDateRangeChanged" CompanyId="@CompanyId"/>
+                    <AccountBalanceReport 
+                        Account="@selectedAccount" 
+                        OnDateRangeChanged="HandleDateRangeChanged" 
+                        CompanyId="@CompanyId" />
                 }
             </MudItem>
         </MudGrid>
@@ -51,16 +55,51 @@
 
     protected override async Task OnInitializedAsync()
     {
-        accounts = await AccountService.GetAccountsAsync(CompanyId);
+        try
+        {
+            accounts = await AccountService.GetAccountsAsync(CompanyId);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Error al cargar las cuentas", Severity.Error);
+            Console.WriteLine($"Error loading accounts: {ex}");
+        }
     }
 
-    private void HandleAccountSelected(Account account)
+    private async Task HandleAccountSelected(Account account)
     {
-        if(account == null)
-            return; 
-
-        selectedAccount = account;
-        StateHasChanged();
+        if (account == null) return;
+        
+        try
+        {
+            selectedAccount = account;
+            // Load balance data in the background
+            _ = LoadAccountBalance(account.Id);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar la cuenta: {ex.Message}", Severity.Error);
+        }
+    }
+    
+    private async Task LoadAccountBalance(int accountId)
+    {
+        try
+        {
+            var updatedAccount = await AccountService.GetAccountBalanceAsync(
+                CompanyId,
+                accountId,
+                DateTime.Now.AddMonths(-1),
+                DateTime.Now
+            );
+            
+            selectedAccount = updatedAccount;
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar el saldo: {ex.Message}", Severity.Error);
+        }
     }
 
     private async Task HandleDateRangeChanged((DateTime fromDate, DateTime toDate) range)
@@ -75,24 +114,10 @@
                 range.fromDate,
                 range.toDate
             );
-            StateHasChanged();
         }
         catch (Exception ex)
         {
             Snackbar.Add($"Error al obtener el reporte de saldos: {ex.Message}", Severity.Error);
-        }
-    }
-
-    private async Task LoadAccounts()
-    {
-        try
-        {
-            accounts = await AccountService.GetAccountsAsync(CompanyId);
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add("Error al cargar las cuentas", Severity.Error);
-            Console.WriteLine($"Error loading accounts: {ex}");
         }
     }
 

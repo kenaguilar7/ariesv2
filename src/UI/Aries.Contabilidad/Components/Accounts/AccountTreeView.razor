@@ -5,7 +5,7 @@
 <MudPaper Class="pa-4">
     <MudTreeView T="Account" Items="@TreeViewItems" Hover="true" Dense="true" ExpandOnClick="true" SelectedValue="selectedAccount" SelectedValueChanged="HandleSelectedValueChanged">
         <ItemTemplate>
-            <MudTreeViewItem Items="@(GetChildTreeItems(context.Value))" Value="@context.Value">
+            <MudTreeViewItem Items="@(GetChildTreeItems(context.Value))" Value="@context.Value" Expanded="true">
                 <Content>
                     <div class="d-flex align-center gap-4 cursor-pointer">
                         <MudText>@context.Value.Name</MudText>

@@ -30,10 +30,6 @@
         TotalCredit="@_totalCredit"
         IsBalanced="@IsBalanced" />
 
-@*         <MudPaper Class="d-flex justify-end pa-4 mt-4 gap-4">
-            <MudButton Variant="Variant.Filled" Color="Color.Default" OnClick="OnCancel">Cancel</MudButton>
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" Type="submit" Disabled="@(!IsBalanced)">Save</MudButton>
-        </MudPaper> *@
     </MudContainer>
 </EditForm>
 
@@ -150,6 +146,9 @@
 
         if (journalEntry.Id == 0)
         {
+            var user = await LocalStorageService.GetCurrentUserSesion();
+            JournalEntry.CreatedBy = user.Id;  
+            JournalEntry.UpdatedBy = user.Id; 
             JournalEntry.Id = await JournalEntryService.CreateJournalEntryAsync(journalEntry);
         }
         else

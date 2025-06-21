@@ -1148,6 +1148,87 @@ BEGIN
 END //
 DELIMITER ;
 
+-- Procedure: SP_GetAccountWithChildBalances
+DELIMITER //
+CREATE PROCEDURE `SP_GetAccountWithChildBalances`(
+    IN AccountId INT,
+    IN CompanyId VARCHAR(4),
+    IN StartMonth VARCHAR(6),
+    IN EndMonth VARCHAR(6)
+)
+BEGIN
+    WITH RECURSIVE AccountHierarchy AS (
+        -- Base case: start with the given account
+        SELECT 
+            account_id,
+            father_account,
+            account_name_id,
+            account_type,
+            editable,
+            previous_balance_c,
+            previous_balance_d
+        FROM accounts
+        WHERE account_id = AccountId
+        AND company_id = CompanyId
+        
+        UNION ALL
+        
+        -- Recursive case: get all child accounts
+        SELECT 
+            a.account_id,
+            a.father_account,
+            a.account_name_id,
+            a.account_type,
+            a.editable,
+            a.previous_balance_c,
+            a.previous_balance_d
+        FROM accounts a
+        INNER JOIN AccountHierarchy ah ON a.father_account = ah.account_id
+        WHERE a.company_id = CompanyId
+    )
+    SELECT 
+        h.account_id AS 'Id',
+        n.name AS 'Name',
+        F_GetAccountPathForReport(h.account_id) AS 'PathDirection',
+        CASE
+            WHEN h.account_type + 0 = 1 THEN 'Activo'
+            WHEN h.account_type + 0 = 2 THEN 'Pasivo'
+            WHEN h.account_type + 0 = 3 THEN 'Capital'
+            WHEN h.account_type + 0 = 4 THEN 'Ingreso'
+            WHEN h.account_type + 0 = 5 THEN 'Egreso'
+            WHEN h.account_type + 0 = 6 THEN 'Costo Venta'
+            ELSE 'Desconocido'
+        END AS 'AccountType',
+        CASE
+            WHEN h.account_type + 0 IN (1, 5, 6) THEN 'Debito'
+            ELSE 'Credito'
+        END AS 'DebOCred',
+        h.editable AS 'EditableMySql',
+        h.father_account AS 'FatherAccount',
+        COALESCE(h.previous_balance_c, 0) AS 'PriorBalance',
+        COALESCE(h.previous_balance_d, 0) AS 'PriorBalanceForeign',
+        COALESCE(b.debito, 0) AS 'DebitBalance',
+        COALESCE(b.debito_USD, 0) AS 'DebitBalanceForeign',
+        COALESCE(b.credito, 0) AS 'CreditBalance',
+        COALESCE(b.credito_USD, 0) AS 'CreditBalanceForeign'
+    FROM AccountHierarchy h
+    INNER JOIN accounts_names n ON h.account_name_id = n.account_name_id
+    LEFT JOIN (
+        SELECT 
+            account_id,
+            SUM(debito) AS debito,
+            SUM(credito) AS credito,
+            SUM(debito_USD) AS debito_USD,
+            SUM(credito_USD) AS credito_USD
+        FROM account_info
+        WHERE company_id = CompanyId
+        AND month_report BETWEEN StartMonth AND EndMonth
+        GROUP BY account_id
+    ) b ON h.account_id = b.account_id
+    ORDER BY PathDirection;
+END //
+DELIMITER ;
+
 -- Reset MySQL session variables
 SET @@SESSION.SQL_LOG_BIN = @MYSQLDUMP_TEMP_LOG_BIN;
 SET TIME_ZONE=@OLD_TIME_ZONE;
@@ -1157,4 +1238,4 @@ SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT;
 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS;
 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION;
-SET SQL_NOTES=@OLD_SQL_NOTES; 
+SET SQL_NOTES=@OLD_SQL_NOTES;

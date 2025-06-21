@@ -12,7 +12,7 @@ namespace Aries.Contabilidad.Services
         private readonly IJSRuntime _jsRuntime;
         private readonly ILocalStorageService _localStorageService;
         private const string TOKEN_KEY = "auth_token";
-        private const string USER_KEY = "user_data";
+        private const string USER_KEY = "current_user_data";
 
         public AuthService(IHttpClientFactory httpClientFactory, IJSRuntime jsRuntime, ILocalStorageService localStorageService)
             : base(httpClientFactory)

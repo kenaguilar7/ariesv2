@@ -39,7 +39,7 @@ ssh -V
 docker login
 
 # Test AWS connection
-ssh -i "C:\aries-dev-server.pem" ubuntu@54.80.155.87 "echo 'Connection successful'"
+ssh -i "C:\aries-dev-server.pem" ubuntu@34.204.118.60 "echo 'Connection successful'"
 ```
 
 ## Pre-Update Checklist

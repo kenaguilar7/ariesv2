@@ -3,15 +3,40 @@
 @using Aries.Contabilidad.Models.Utils
 
 <MudTd ColSpan="2">
-    <MudToggleIconButton @bind-Toggled="@_open" Icon="@Icons.Material.Filled.Fullscreen" Color="@Color.Primary" ToggledIcon="@Icons.Material.Filled.FullscreenExit" ToggledColor="@Color.Secondary" />
+    @* <MudToggleIconButton @bind-Toggled="@_open" Icon="@Icons.Material.Filled.Fullscreen" Color="@Color.Primary" ToggledIcon="@Icons.Material.Filled.FullscreenExit" ToggledColor="@Color.Secondary" /> *@
 
-    <MudPopover Open="@_open" Fixed="true" Class="px-4 pt-4">
-    <div class="d-flex flex-column">
-        
-        <AccountTreeView Accounts="@Accounts" OnAccountSelected="HandleAccountSelected" />
-        <MudButton OnClick="@ToggleOpen" Class="ml-auto mr-n3 mb-1" Color="Color.Error">Close</MudButton>
-    </div>
-</MudPopover>
+@*     <MudPopover Open="@_open"
+                Fixed="true"
+                AnchorOrigin="Origin.CenterCenter"
+                TransformOrigin="Origin.CenterCenter"
+                Class="account-selector-popover"
+                Style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1300;">
+        <div class="popover-container" style="pointer-events: auto;">
+            <div class="popover-content">
+                <div class="scrollable-treeview">
+                    <AccountTreeView Accounts="@Accounts" OnAccountSelected="HandleAccountSelected" />
+                </div>
+                <div class="popover-actions">
+                    <MudButton OnClick="@ToggleOpen" Color="Color.Error" Variant="Variant.Text" Size="Size.Small">
+                        Cerrar
+                    </MudButton>
+                </div>
+            </div>
+        </div>
+    </MudPopover> *@
+
+    <MudExpansionPanel Text="@(Line.AccountName ?? string.Empty)">
+        <MudTextField @bind-Value="_searchText"
+                      Placeholder="Buscar cuenta..."
+                      Immediate="true"
+                      Variant="Variant.Outlined"
+                      Adornment="Adornment.Start"
+                      Icon="@Icons.Material.Filled.Search"
+                      Class="mb-2" />
+        <div class="scrollable-treeview">
+            <AccountTreeView Accounts="@Accounts" OnAccountSelected="HandleAccountSelected" />
+        </div>
+    </MudExpansionPanel>
 
     <MudTextField @bind-Value="Line.Memo"
     Label="Memo"
@@ -148,6 +173,22 @@
        await OnCancelAction.InvokeAsync();
     }
 
+    private string _searchText = string.Empty;
+    private List<Account> _allAccounts = new();
+
+    protected override void OnInitialized()
+    {
+        _allAccounts = Accounts; // Guardamos una copia de todas las cuentas
+    }
+
+    private IEnumerable<Account> FilteredAccounts =>
+        string.IsNullOrWhiteSpace(_searchText)
+            ? _allAccounts
+            : _allAccounts.Where(a =>
+                a.Name.Contains(_searchText, StringComparison.OrdinalIgnoreCase) ||
+                a.Id.ToString().Contains(_searchText));
+        
+
     protected override async Task OnInitializedAsync()
     {
         try
@@ -178,3 +219,50 @@
         StateHasChanged();
     }
 }
+
+<style>
+    /* Fondo oscuro semi-transparente para mejor enfoque */
+    .account-selector-popover .mud-overlay {
+        background-color: rgba(0, 0, 0, 0.5) !important;
+    }
+
+    /* Contenedor del popover centrado */
+    .popover-container {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 400px;
+        max-width: 90vw;
+        max-height: 80vh;
+        background: var(--mud-palette-surface);
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Contenido del popover con padding */
+    .popover-content {
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+    }
+
+    /* Scroll interno del TreeView */
+    .scrollable-treeview {
+        flex: 1;
+        overflow-y: auto;
+        max-height: 40vh;
+        margin: -8px; /* Compensa el padding del contenedor */
+        padding: 8px; /* Vuelve a agregar espacio para el scrollbar */
+    }
+
+    /* Botones de acción alineados a la derecha */
+    .popover-actions {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 12px;
+    }
+</style>
